@@ -1,0 +1,400 @@
+<!doctype html>
+<html lang="nl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Kenteken Check</title>
+<meta name="description" content="Vul een kenteken in: specificaties, wat de auto waard is, of de vraagprijs eerlijk is en wat hij per maand kost.">
+<style>
+  :root {
+    --bg: #f4f5f7; --card: #ffffff; --text: #16181d; --muted: #676d7a;
+    --line: #e3e5ea; --accent: #1f6feb; --good: #1a7f37; --warn: #b54708; --bad: #c62828;
+    --plate: #f7c600; --plate-blue: #1b3d8f; --field: #f8f9fb;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #0f1115; --card: #181b21; --text: #eceef2; --muted: #9aa1ad;
+      --line: #2a2e37; --accent: #4c8dff; --good: #3fb950; --warn: #e3a008; --bad: #f05252;
+      --field: #12151a;
+    }
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--text);
+    font: 16px/1.5 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+  main { max-width: 640px; margin: 0 auto; padding: 32px 16px 64px; }
+  h1 { font-size: 1.6rem; margin: 0 0 4px; }
+  .sub { color: var(--muted); margin: 0 0 24px; }
+
+  #form { display: flex; gap: 8px; }
+  .plate { flex: 1; display: flex; border-radius: 8px; overflow: hidden;
+    border: 2px solid #111; background: var(--plate); }
+  .plate .nl { background: var(--plate-blue); color: #fff; font-weight: 700;
+    font-size: .8rem; display: flex; align-items: flex-end; justify-content: center;
+    width: 36px; padding-bottom: 6px; }
+  .plate input { flex: 1; min-width: 0; border: 0; background: transparent; color: #111;
+    font: 700 1.6rem/1 "Arial Narrow", Arial, sans-serif; letter-spacing: 2px;
+    text-transform: uppercase; padding: 12px; outline: none; text-align: center; }
+  button { border: 0; border-radius: 8px; background: var(--accent); color: #fff;
+    font-weight: 600; font-size: 1rem; padding: 0 20px; cursor: pointer; }
+  button:disabled { opacity: .6; cursor: wait; }
+
+  .msg { margin-top: 16px; color: var(--muted); }
+  .msg.error { color: var(--bad); }
+
+  .card { background: var(--card); border: 1px solid var(--line); border-radius: 12px;
+    padding: 20px; margin-top: 16px; }
+  .title { font-size: 1.35rem; font-weight: 700; margin: 0; }
+  .meta { color: var(--muted); margin: 2px 0 0; }
+  h2 { font-size: 1rem; margin: 0 0 12px; }
+
+  .inputs { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+  @media (max-width: 520px) { .inputs { grid-template-columns: 1fr; } }
+  .inputs label { display: flex; flex-direction: column; gap: 4px; font-size: .85rem; color: var(--muted); }
+  .inputs input { font: inherit; color: var(--text); background: var(--field);
+    border: 1px solid var(--line); border-radius: 8px; padding: 10px 12px; width: 100%; }
+  .inputs input:focus { outline: 2px solid var(--accent); outline-offset: -1px; }
+
+  .value { text-align: center; }
+  .value .label { color: var(--muted); font-size: .9rem; }
+  .value .range { font-size: 2rem; font-weight: 800; margin: 4px 0; }
+  .note { color: var(--muted); font-size: .85rem; margin: 8px 0 0; }
+
+  .verdict { text-align: center; border-width: 2px; }
+  .verdict .big { font-size: 1.6rem; font-weight: 800; margin: 0; }
+  .verdict.good { border-color: var(--good); } .verdict.good .big { color: var(--good); }
+  .verdict.ok   { border-color: var(--accent); } .verdict.ok .big { color: var(--accent); }
+  .verdict.warn { border-color: var(--warn); } .verdict.warn .big { color: var(--warn); }
+  .verdict.bad  { border-color: var(--bad);  } .verdict.bad .big  { color: var(--bad); }
+  .verdict p { margin: 6px 0 0; }
+
+  .badges { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+  .badge { font-size: .85rem; padding: 4px 10px; border-radius: 999px; border: 1px solid var(--line); }
+  .badge.good { color: var(--good); border-color: currentColor; }
+  .badge.warn { color: var(--warn); border-color: currentColor; }
+  .badge.bad  { color: var(--bad);  border-color: currentColor; }
+
+  dl { display: grid; grid-template-columns: 1fr auto; gap: 0; margin: 0; }
+  dt, dd { padding: 8px 0; border-bottom: 1px solid var(--line); margin: 0; }
+  dt { color: var(--muted); }
+  dd { text-align: right; font-weight: 500; font-variant-numeric: tabular-nums; }
+  dl .total { color: var(--text); font-weight: 700; border-bottom: 0; }
+  footer { color: var(--muted); font-size: .8rem; margin-top: 24px; text-align: center; }
+</style>
+</head>
+<body>
+<main>
+  <h1>Kenteken Check</h1>
+  <p class="sub">Specificaties, wat de auto waard is, of de vraagprijs eerlijk is en wat hij per maand kost.</p>
+
+  <form id="form">
+    <div class="plate"><span class="nl">NL</span>
+      <input id="plate" placeholder="XX-123-X" maxlength="10" autocomplete="off" autofocus>
+    </div>
+    <button id="go">Check</button>
+  </form>
+
+  <div id="out"></div>
+
+  <footer>Data: RDW Open Data. Waarde en kosten zijn schattingen, geen taxatie of officiële berekening.</footer>
+</main>
+
+<script>
+const API = "https://opendata.rdw.nl/resource/";
+const $ = (id) => document.getElementById(id);
+
+// ---------- assumptions (tune these as you collect real data) ----------
+const FUEL_PRICE = { benzine: 1.95, diesel: 1.75, lpg: 0.95, elektriciteit: 0.35 }; // € per liter / kWh
+const KM_PER_YEAR_TYPICAL = { diesel: 20000, other: 13000 };
+const HOLDS_VALUE = ["TOYOTA","LEXUS","PORSCHE","SUZUKI","MAZDA","HONDA","KIA","HYUNDAI","MINI","VOLKSWAGEN","SKODA"];
+const LOSES_VALUE = ["MASERATI","ALFA ROMEO","JAGUAR","LAND ROVER","CITROEN","DS","FIAT","RENAULT","OPEL","INFINITI","NISSAN"];
+
+// ---------- helpers ----------
+const clean = (s) => s.toUpperCase().replace(/[^A-Z0-9]/g, "");
+const esc = (s) => String(s).replace(/[&<>"]/g, c => ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;" }[c]));
+const euro = (n) => "€ " + Math.round(n).toLocaleString("nl-NL");
+const num = (s) => { const n = parseFloat(String(s).replace(/[^\d,.-]/g, "").replace(/\./g, "").replace(",", ".")); return isFinite(n) ? n : null; };
+const parseDate = (s) => s ? new Date(+s.slice(0,4), +s.slice(4,6) - 1, +s.slice(6,8)) : null;
+const fmtDate = (d) => d ? d.toLocaleDateString("nl-NL", { day: "numeric", month: "long", year: "numeric" }) : "–";
+const cap = (s) => s ? s.charAt(0) + s.slice(1).toLowerCase() : "";
+const known = (v) => v && !/niet geregistreerd|n\.v\.t\.|geen verstrekking/i.test(v);
+const round250 = (n) => Math.max(250, Math.round(n / 250) * 250);
+
+let state = null; // { car, fuel }
+
+// Derived facts used by several features.
+function facts(car, fuel) {
+  const f = fuel[0] || {};
+  const types = fuel.map(x => (x.brandstof_omschrijving || "").toLowerCase());
+  const isEV = types.length === 1 && types[0] === "elektriciteit";
+  const isPHEV = types.includes("elektriciteit") && types.length > 1;
+  const main = (fuel.find(x => !/elektriciteit/i.test(x.brandstof_omschrijving)) || f);
+  const fuelType = isEV ? "elektriciteit" : (main.brandstof_omschrijving || "").toLowerCase();
+  const first = parseDate(car.datum_eerste_toelating);
+  const age = first ? (Date.now() - first) / (365.25 * 864e5) : null;
+  const kw = isEV ? (+f.netto_max_vermogen_elektrisch || +f.nominaal_continu_maximumvermogen || null)
+                  : (+main.nettomaximumvermogen || null);
+  return { f, main, fuelType, isEV, isPHEV, first, age, kw: kw ? Math.round(kw) : null };
+}
+
+// ---------- value estimate ----------
+// Rough depreciation from catalogue price; optional mileage narrows the range.
+function estimateValue(car, fx, km, ageAhead = 0) {
+  const price = +car.catalogusprijs;
+  if (car.voertuigsoort !== "Personenauto") return { ok: false, reason: "Waardeschatting is alleen beschikbaar voor personenauto's." };
+  if (!price || fx.age == null) return { ok: false, reason: "Geen nieuwprijs bekend bij de RDW voor deze auto." };
+  const age = fx.age + ageAhead;
+  if (age > 25) return { ok: false, reason: "Klassieker (25+ jaar): de waarde hangt vooral af van staat en zeldzaamheid." };
+
+  // ~20% loss in year 1, then ~12% per year on the remaining value.
+  let factor = age < 1 ? 1 - 0.20 * age : 0.80 * Math.pow(0.88, age - 1);
+  const notes = [];
+
+  if (HOLDS_VALUE.includes(car.merk)) { factor *= 1.08; notes.push("merk houdt waarde goed vast"); }
+  if (LOSES_VALUE.includes(car.merk)) { factor *= 0.90; notes.push("merk verliest sneller waarde"); }
+  // Gradual penalties (no sudden jump at a birthday): up to -10%.
+  const ramp = (from, to) => Math.min(1, Math.max(0, (age - from) / (to - from)));
+  if (fx.fuelType === "diesel" && age > 5) { factor *= 1 - 0.10 * ramp(5, 10); if (age > 7) notes.push("oudere diesel (milieuzones)"); }
+  if (fx.isEV && age > 1) { factor *= 1 - 0.10 * ramp(1, 4); if (age > 3) notes.push("oudere EV"); }
+  if (/onlogisch/i.test(car.tellerstandoordeel || "")) { factor *= 0.80; notes.push("kilometerstand onlogisch"); }
+
+  if (km != null) {
+    // ±3% per 10.000 km above/below what is normal for this age.
+    const perYear = fx.fuelType === "diesel" ? KM_PER_YEAR_TYPICAL.diesel : KM_PER_YEAR_TYPICAL.other;
+    const expected = Math.max(age, 0.5) * perYear;
+    const adj = Math.min(1.15, Math.max(0.65, 1 - 0.03 * (km - expected) / 10000));
+    factor *= adj;
+    if (adj < 0.97) notes.push(`veel km voor de leeftijd (normaal ±${Math.round(expected / 1000)}k)`);
+    if (adj > 1.03) notes.push(`weinig km voor de leeftijd (normaal ±${Math.round(expected / 1000)}k)`);
+  }
+
+  const mid = Math.max(price * factor, 500);
+  const spread = km != null ? 0.15 : 0.25;
+  return { ok: true, mid, low: round250(mid * (1 - spread)), high: round250(mid * (1 + spread)), price, age, notes, withKm: km != null };
+}
+
+// ---------- deal verdict ----------
+function verdict(asking, v) {
+  const r = asking / v.mid, diff = asking - v.mid;
+  if (r < 0.6)  return ["warn", "Verdacht goedkoop", `${euro(-diff)} onder onze schatting. Kan een koopje zijn, maar check schade, onderhoud en eigendom extra goed.`];
+  if (r < 0.88) return ["good", "Goede deal", `Ongeveer ${euro(-diff)} onder onze schatting.`];
+  if (r <= 1.1) return ["ok", "Eerlijke prijs", "De vraagprijs ligt rond onze schatting."];
+  if (r <= 1.3) return ["warn", "Aan de prijzige kant", `Ongeveer ${euro(diff)} boven onze schatting. Ruimte om te onderhandelen.`];
+  return ["bad", "Te duur", `Ongeveer ${euro(diff)} boven onze schatting.`];
+}
+
+// ---------- road tax (MRB) estimate, 2026 ----------
+// Calibrated on 2026 amounts for Noord-Brabant (87 opcenten, near the national middle).
+// Petrol: 1000 kg ≈ €93, 1200 ≈ €148, 1500 ≈ €231 per quarter. Diesel: 246 / 334 / 466.
+function roadTaxPerMonth(car, fx) {
+  if (car.voertuigsoort !== "Personenauto") return null;
+  if (fx.age != null && fx.age >= 40) return { amount: 0, note: "oldtimer: vrijgesteld" };
+  let kg = +car.massa_ledig_voertuig || (+car.massa_rijklaar - 100);
+  if (!kg) return null;
+  if (fx.isEV) kg -= 125; // EV weight correction
+
+  const above = (kg - 1000) / 100;
+  let quarter;
+  if (fx.fuelType === "diesel") quarter = above >= 0 ? 246 + 44 * above : Math.max(150, 246 + 30 * above);
+  else                          quarter = above >= 0 ? 93 + 27.7 * above : Math.max(40, 93 + 20 * above);
+
+  let note = "";
+  if (fx.fuelType === "lpg") { quarter *= 1.5; note = "LPG-toeslag (grof)"; }
+  if (fx.fuelType === "diesel" && /EURO [1-4]\b/i.test(fx.main.uitlaatemissieniveau || "")) { quarter *= 1.15; note = "fijnstoftoeslag oude diesel"; }
+  if (fx.isEV) { quarter *= 0.70; note = "EV: 70% van benzinetarief in 2026"; }
+  return { amount: quarter / 3, note };
+}
+
+// ---------- fuel cost ----------
+function fuelPerMonth(fx, kmYear) {
+  const f = fx.isEV ? fx.f : fx.main;
+  if (fx.isEV) {
+    const whkm = +f.elektrisch_verbruik_enkel_elektrisch_wltp;
+    if (!whkm) return null;
+    return { amount: kmYear / 12 * whkm / 1000 * FUEL_PRICE.elektriciteit, use: `${Math.round(whkm / 10)} kWh/100 km` };
+  }
+  let l = +f.brandstof_verbruik_gecombineerd_wltp;
+  if (!l && +f.brandstofverbruik_gecombineerd) l = +f.brandstofverbruik_gecombineerd * 1.2; // NEDC → realistic
+  if (!l) return null;
+  if (fx.isPHEV) l = Math.max(l, 4.5); // real-world PHEV use without daily charging is higher than WLTP
+  const price = FUEL_PRICE[fx.fuelType] || FUEL_PRICE.benzine;
+  return { amount: kmYear / 12 * l / 100 * price, use: `${l.toFixed(1)} l/100 km` };
+}
+
+// ---------- rendering ----------
+function renderAll() {
+  const { car, fuel } = state;
+  const fx = facts(car, fuel);
+  const km = num($("km")?.value ?? "");
+  const asking = num($("ask")?.value ?? "");
+  const kmYear = num($("kmy")?.value ?? "") || 12000;
+
+  const v = estimateValue(car, fx, km);
+  let html = "";
+
+  // value
+  html += v.ok
+    ? `<div class="card value">
+         <div class="label">Je koopt deze auto ongeveer voor</div>
+         <div class="range">${euro(v.low)} – ${euro(v.high)}</div>
+         <p class="note">Nieuwprijs ${euro(v.price)} · ${v.age.toFixed(1)} jaar oud${v.notes.length ? " · " + esc(v.notes.join(", ")) : ""}.<br>
+         ${v.withKm ? "Staat en opties zijn niet meegenomen." : "Vul de kilometerstand in voor een scherpere schatting."}</p>
+       </div>`
+    : `<div class="card value"><div class="label">Waardeschatting</div><p class="note">${esc(v.reason)}</p></div>`;
+
+  // deal verdict
+  if (v.ok && asking) {
+    const [cls, title, text] = verdict(asking, v);
+    html += `<div class="card verdict ${cls}"><p class="big">${esc(title)}</p><p>${esc(text)}</p>
+             ${km == null ? `<p class="note">Tip: vul ook de kilometerstand in, dan is dit oordeel betrouwbaarder.</p>` : ""}</div>`;
+  }
+
+  // monthly costs
+  const tax = roadTaxPerMonth(car, fx);
+  const fuelCost = fuelPerMonth(fx, kmYear);
+  let dep = null;
+  if (v.ok) {
+    const next = estimateValue(car, fx, km != null ? km + kmYear : null, 1);
+    if (next.ok) dep = Math.max(0, (v.mid - next.mid) / 12);
+  }
+  const costRows = [];
+  if (tax) costRows.push(["Wegenbelasting" + (tax.note ? ` (${tax.note})` : ""), tax.amount]);
+  if (fuelCost) costRows.push([`${fx.isEV ? "Stroom" : "Brandstof"} (${fuelCost.use})`, fuelCost.amount]);
+  if (dep != null) costRows.push(["Waardeverlies", dep]);
+  if (costRows.length) {
+    const total = costRows.reduce((s, [, a]) => s + a, 0);
+    html += `<div class="card"><h2>Wat kost deze auto per maand?</h2>
+      <dl>${costRows.map(([k, a]) => `<dt>${esc(k)}</dt><dd>${euro(a)}</dd>`).join("")}
+        <dt class="total">Totaal (excl. verzekering en onderhoud)</dt><dd class="total">${euro(total)}</dd></dl>
+      <p class="note">Bij ${kmYear.toLocaleString("nl-NL")} km per jaar. Wegenbelasting is een schatting voor een gemiddelde provincie (2026).
+      Brandstof: benzine € ${FUEL_PRICE.benzine.toFixed(2)}, diesel € ${FUEL_PRICE.diesel.toFixed(2)}, stroom € ${FUEL_PRICE.elektriciteit.toFixed(2)}/kWh.</p></div>`;
+  }
+
+  $("results").innerHTML = html;
+}
+
+function renderCar() {
+  const { car, fuel } = state;
+  const fx = facts(car, fuel);
+  const firstNL = parseDate(car.datum_eerste_tenaamstelling_in_nederland);
+  const apk = parseDate(car.vervaldatum_apk);
+  const year = fx.first ? fx.first.getFullYear() : "";
+  const hp = fx.kw ? Math.round(fx.kw * 1.36) : null;
+  const fuelLabel = fuel.map(x => x.brandstof_omschrijving).filter(Boolean).join(" + ");
+
+  const badges = [];
+  if (apk) {
+    const days = (apk - Date.now()) / 864e5;
+    badges.push(days < 0 ? ["bad", "APK verlopen"] : days < 60 ? ["warn", "APK verloopt binnenkort"] : ["good", "APK geldig"]);
+  }
+  if (car.tellerstandoordeel) badges.push(/onlogisch/i.test(car.tellerstandoordeel) ? ["bad", "Km-stand onlogisch"] : ["good", "Km-stand logisch"]);
+  if (car.openstaande_terugroepactie_indicator === "Ja") badges.push(["warn", "Openstaande terugroepactie"]);
+  if (car.wam_verzekerd === "Nee") badges.push(["bad", "Niet verzekerd"]);
+  if (car.export_indicator === "Ja") badges.push(["warn", "Gemeld voor export"]);
+  if (fx.first && firstNL && firstNL - fx.first > 180 * 864e5) badges.push(["warn", "Geïmporteerd"]);
+
+  const f = fx.isEV ? fx.f : fx.main;
+  const rows = [
+    ["Kenteken", car.kenteken],
+    ["Soort", car.voertuigsoort],
+    ["Bouwjaar", year],
+    ["Eerste toelating", fmtDate(fx.first)],
+    ["Eerste keer op NL kenteken", fmtDate(firstNL)],
+    ["APK tot", fmtDate(apk)],
+    ["Brandstof", fuelLabel],
+    ["Vermogen", fx.kw ? `${fx.kw} kW (${hp} pk)` : null],
+    ["Motorinhoud", car.cilinderinhoud ? `${car.cilinderinhoud} cc` : null],
+    ["Cilinders", car.aantal_cilinders],
+    ["Verbruik (WLTP)", f.brandstof_verbruik_gecombineerd_wltp ? `${(+f.brandstof_verbruik_gecombineerd_wltp).toFixed(1)} l/100 km` : null],
+    ["Stroomverbruik (WLTP)", fx.f.elektrisch_verbruik_enkel_elektrisch_wltp ? `${Math.round(fx.f.elektrisch_verbruik_enkel_elektrisch_wltp / 10)} kWh/100 km` : null],
+    ["Actieradius (WLTP)", fx.f.actie_radius_enkel_elektrisch_wltp ? `${fx.f.actie_radius_enkel_elektrisch_wltp} km` : null],
+    ["CO₂ (WLTP)", f.emissie_co2_gecombineerd_wltp ? `${f.emissie_co2_gecombineerd_wltp} g/km` : null],
+    ["Emissieklasse", f.uitlaatemissieniveau],
+    ["Kleur", known(car.eerste_kleur) ? cap(car.eerste_kleur) : null],
+    ["Carrosserie", car.inrichting],
+    ["Deuren / zitplaatsen", car.aantal_deuren || car.aantal_zitplaatsen ? `${car.aantal_deuren || "–"} / ${car.aantal_zitplaatsen || "–"}` : null],
+    ["Leeggewicht", car.massa_ledig_voertuig ? `${(+car.massa_ledig_voertuig).toLocaleString("nl-NL")} kg` : null],
+    ["Max. trekgewicht geremd", car.maximum_trekken_massa_geremd ? `${(+car.maximum_trekken_massa_geremd).toLocaleString("nl-NL")} kg` : null],
+    ["Topsnelheid", car.maximale_constructiesnelheid ? `${car.maximale_constructiesnelheid} km/u` : null],
+    ["Nieuwprijs (catalogus)", car.catalogusprijs ? euro(+car.catalogusprijs) : null],
+  ].filter(([, val]) => val);
+
+  $("out").innerHTML = `
+    <div class="card">
+      <p class="title">${esc(cap(car.merk))} ${esc(car.handelsbenaming || "")}</p>
+      <p class="meta">${esc([year, fuelLabel, hp ? hp + " pk" : ""].filter(Boolean).join(" · "))}</p>
+      <div class="badges">${badges.map(([c, t]) => `<span class="badge ${c}">${esc(t)}</span>`).join("")}</div>
+    </div>
+    <div class="card">
+      <h2>Staat de auto te koop? Vul de advertentie in</h2>
+      <div class="inputs">
+        <label>Kilometerstand<input id="km" inputmode="numeric" placeholder="bijv. 85000"></label>
+        <label>Vraagprijs (€)<input id="ask" inputmode="numeric" placeholder="bijv. 8500"></label>
+        <label>Jouw km per jaar<input id="kmy" inputmode="numeric" placeholder="12000"></label>
+      </div>
+    </div>
+    <div id="results"></div>
+    <div class="card">
+      <h2>Specificaties</h2>
+      <dl>${rows.map(([k, val]) => `<dt>${esc(k)}</dt><dd>${esc(val)}</dd>`).join("")}</dl>
+    </div>`;
+
+  // Prefill from link (?k=..&km=..&p=..&j=..) so a deal check can be shared.
+  const q = new URLSearchParams(location.search);
+  for (const [id, key] of [["km", "km"], ["ask", "p"], ["kmy", "j"]]) {
+    if (q.get(key)) $(id).value = q.get(key);
+    $(id).addEventListener("input", () => { renderAll(); updateLink(); });
+  }
+  renderAll();
+}
+
+function updateLink() {
+  const p = new URLSearchParams({ k: state.car.kenteken });
+  for (const [id, key] of [["km", "km"], ["ask", "p"], ["kmy", "j"]]) {
+    const n = num($(id).value);
+    if (n) p.set(key, n);
+  }
+  history.replaceState(null, "", "?" + p);
+}
+
+// ---------- lookup ----------
+async function lookup(plate) {
+  const [carRes, fuelRes] = await Promise.all([
+    fetch(`${API}m9d7-ebf2.json?kenteken=${plate}`),
+    fetch(`${API}8ys7-d773.json?kenteken=${plate}`),
+  ]);
+  if (!carRes.ok) throw new Error("De RDW is nu niet bereikbaar. Probeer het later opnieuw.");
+  const cars = await carRes.json();
+  const fuel = fuelRes.ok ? await fuelRes.json() : [];
+  fuel.sort((a, b) => (+a.brandstof_volgnummer || 0) - (+b.brandstof_volgnummer || 0));
+  return { car: cars[0], fuel };
+}
+
+async function search(raw) {
+  const plate = clean(raw);
+  if (plate.length < 4) {
+    $("out").innerHTML = `<p class="msg error">Vul een geldig kenteken in.</p>`;
+    return;
+  }
+  $("go").disabled = true;
+  $("out").innerHTML = `<p class="msg">Bezig met opzoeken…</p>`;
+  try {
+    const { car, fuel } = await lookup(plate);
+    if (!car) { $("out").innerHTML = `<p class="msg error">Geen voertuig gevonden met kenteken ${esc(plate)}.</p>`; return; }
+    const keep = clean(new URLSearchParams(location.search).get("k") || "") === plate;
+    state = { car, fuel };
+    if (!keep) history.replaceState(null, "", `?k=${plate}`); // shareable link
+    renderCar();
+  } catch (err) {
+    $("out").innerHTML = `<p class="msg error">${esc(err.message || "Er ging iets mis.")}</p>`;
+  } finally {
+    $("go").disabled = false;
+  }
+}
+
+$("form").addEventListener("submit", (e) => { e.preventDefault(); search($("plate").value); });
+
+const initial = new URLSearchParams(location.search).get("k");
+if (initial) { $("plate").value = initial; search(initial); }
+</script>
+</body>
+</html>
