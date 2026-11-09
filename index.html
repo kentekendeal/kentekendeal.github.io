@@ -170,7 +170,7 @@ function renderCar() {
   }
   if (car.tellerstandoordeel) badges.push(/onlogisch/i.test(car.tellerstandoordeel) ? ["bad", "Km-stand onlogisch"] : ["good", "Km-stand logisch"]);
   if (car.openstaande_terugroepactie_indicator === "Ja") badges.push(["warn", "Openstaande terugroepactie"]);
-  if (car.wam_verzekerd === "Nee") badges.push(["bad", "Niet verzekerd"]);
+  if (car.wam_verzekerd === "Nee") badges.push(["warn", "Niet verzekerd (normaal bij dealervoorraad)"]);
   if (car.export_indicator === "Ja") badges.push(["warn", "Gemeld voor export"]);
   if (fx.first && firstNL && firstNL - fx.first > 180 * 864e5) badges.push(["warn", "Geïmporteerd"]);
 
