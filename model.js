@@ -198,6 +198,8 @@ function fuelPerMonth(fx, kmYear) {
   // Plug-ins often only have a "weighted" figure (assumes charging every day, e.g. 1.0 l/100 km).
   let l = +f.brandstof_verbruik_gecombineerd_wltp || +f.brandstof_verbruik_gewogen_gecombineerd_wltp;
   if (!l && +f.brandstofverbruik_gecombineerd) l = +f.brandstofverbruik_gecombineerd * 1.2; // NEDC → realistic
+  // No consumption figure at all (happens for some hybrids): derive it from CO₂ (g/km per l/100 km).
+  if (!l && +f.emissie_co2_gecombineerd_wltp) l = +f.emissie_co2_gecombineerd_wltp / ({ diesel: 26.4, lpg: 16.6 }[fx.fuelType] || 23.1);
   if (fx.isPHEV) l = Math.max(l || 0, 4.5); // real-world PHEV use without daily charging is higher than WLTP
   if (!l) return null;
   const price = FUEL_PRICE[fx.fuelType] || FUEL_PRICE.benzine;
