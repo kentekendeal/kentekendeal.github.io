@@ -61,6 +61,39 @@ async function lookup(plate) {
   return { car: cars[0], fuel };
 }
 
+// APK history (RDW publishes inspections from June 2022 onwards).
+// Returns [{ date, defects: [{ id, text, count, advice }] }], newest first.
+// Codes AC*/RA*/OP* are advisories ("adviespunten"), everything else is a defect found at the inspection.
+async function apkHistory(plate) {
+  const q = (d, extra = "") => fetch(`${API}${d}.json?kenteken=${plate}${extra}&$limit=500`).then(r => r.ok ? r.json() : Promise.reject());
+  const [checks, found] = await Promise.all([
+    q("sgfe-77wx", "&soort_melding_ki_omschrijving=periodieke%20controle"),
+    q("a34c-vvps"),
+  ]);
+  const byDate = new Map();
+  const visit = (d) => { if (!byDate.has(d)) byDate.set(d, { date: parseDate(d), defects: [] }); return byDate.get(d); };
+  for (const c of checks) visit(c.meld_datum_door_keuringsinstantie);
+  for (const g of found) visit(g.meld_datum_door_keuringsinstantie).defects.push({
+    id: g.gebrek_identificatie, count: +g.aantal_gebreken_geconstateerd || 1,
+    advice: /^(AC|RA|OP)\d/.test(g.gebrek_identificatie || ""),
+  });
+  const ids = [...new Set(found.map(g => g.gebrek_identificatie).filter(id => /^[A-Z0-9]{1,6}$/i.test(id)))];
+  const texts = {};
+  if (ids.length) {
+    const where = encodeURIComponent(`gebrek_identificatie in(${ids.map(id => `'${id}'`).join(",")})`);
+    try {
+      for (const d of await fetch(`${API}hx2c-gt7k.json?$where=${where}&$limit=500`).then(r => r.json()))
+        texts[d.gebrek_identificatie] = d.gebrek_omschrijving;
+    } catch { /* descriptions are optional */ }
+  }
+  const list = [...byDate.values()].filter(x => x.date).sort((a, b) => b.date - a.date);
+  for (const x of list) {
+    for (const g of x.defects) g.text = texts[g.id] || t("apkUnknownDefect", { id: g.id });
+    x.defects.sort((a, b) => a.advice - b.advice);
+  }
+  return list;
+}
+
 // Derived facts used by several features.
 function facts(car, fuel) {
   const f = fuel[0] || {};

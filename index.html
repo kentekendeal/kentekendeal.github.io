@@ -125,6 +125,7 @@
   .badge { font-size: .8rem; font-weight: 600; padding: 4px 10px; border-radius: 999px; }
   .badge.good { color: var(--good); background: var(--good-bg); }
   .badge.warn { color: var(--warn); background: var(--warn-bg); }
+  .badge.ok   { color: var(--ok); background: var(--ok-bg); }
   .badge.bad  { color: var(--bad);  background: var(--bad-bg); }
   .actions { display: flex; gap: 8px; margin-top: 14px; }
   .link-btn { border: 1px solid var(--line); background: var(--card); color: var(--text); border-radius: 10px;
@@ -177,6 +178,22 @@
   .cost-row .amt { font-weight: 700; font-variant-numeric: tabular-nums; }
   .inline-input { display: flex; align-items: center; gap: 10px; margin-top: 12px; font-size: .88rem; color: var(--muted); }
   .inline-input input { width: 120px; padding: 7px 10px; font-size: .95rem; }
+
+  /* APK history */
+  .apk-stats { grid-template-columns: repeat(3, 1fr); margin-top: 0; }
+  .apk-list { list-style: none; margin: 16px 0 0; padding: 0; }
+  .apk-item { position: relative; padding: 0 0 16px 26px; }
+  .apk-item::before { content: ""; position: absolute; left: 6px; top: 16px; bottom: 0; width: 2px; background: var(--line); }
+  .apk-item:last-child::before { display: none; }
+  .apk-item .dot { position: absolute; left: 0; top: 4px; width: 14px; height: 14px; border: 3px solid var(--card); box-sizing: content-box; margin: -3px; }
+  .apk-head { display: flex; justify-content: space-between; align-items: center; gap: 8px; flex-wrap: wrap; }
+  .apk-head b { font-variant-numeric: tabular-nums; }
+  .apk-item ul { margin: 6px 0 0; padding: 0; list-style: none; }
+  .apk-item li { font-size: .9rem; padding: 3px 0; display: flex; gap: 8px; align-items: baseline; }
+  .apk-item li .x { color: var(--muted); font-size: .8rem; white-space: nowrap; }
+  .apk-item li .tag { font-size: .7rem; font-weight: 700; text-transform: uppercase; letter-spacing: .3px; color: var(--muted);
+    border: 1px solid var(--line); border-radius: 6px; padding: 0 6px; white-space: nowrap; }
+  .apk-item.hidden { display: none; }
 
   /* specs */
   details { border-top: 1px solid var(--line); }
@@ -305,6 +322,7 @@ $("chips").addEventListener("click", (e) => {
 
 // ---------- small visuals ----------
 const ICON = {
+  check: `<svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3 8-8"/><path d="M20 12v6a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h9"/></svg>`,
   euro: `<svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 7a6 6 0 1 0 0 10M4 10h9M4 14h9"/></svg>`,
   wallet: `<svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="6" width="18" height="13" rx="2"/><path d="M3 10h18M16 14h2"/></svg>`,
   list: `<svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></svg>`,
@@ -524,6 +542,11 @@ function renderCar() {
     </div>
 
     <div class="card">
+      <h2>${ICON.check} ${esc(t("apkTitle"))}</h2>
+      <div id="apkOut"><div class="skel" style="height:64px"></div><div class="skel" style="height:90px;margin-top:16px"></div></div>
+    </div>
+
+    <div class="card">
       <h2>${ICON.list} ${esc(t("specsTitle"))}</h2>
       ${groups.map(([title, rows], i) => `<details ${i === 0 ? "open" : ""}><summary>${esc(title)}</summary>
         <dl>${rows.map(([k, val]) => `<dt>${esc(k)}</dt><dd>${esc(val)}</dd>`).join("")}</dl></details>`).join("")}
@@ -537,6 +560,50 @@ function renderCar() {
   }
   $("share").addEventListener("click", share);
   renderAll();
+  loadApk(car, fx);
+}
+
+// ---------- APK history (loaded after the main card, so it never slows the first result) ----------
+async function loadApk(car, fx) {
+  const plate = car.kenteken;
+  let list;
+  if (state.apk) return renderApk(fx);   // e.g. after a language switch
+  try { list = await apkHistory(plate); }
+  catch { if (state?.car.kenteken === plate) $("apkOut").innerHTML = `<p class="note">${esc(t("apkError"))}</p>`; return; }
+  if (state?.car.kenteken !== plate || !$("apkOut")) return;   // user already searched another plate
+  state.apk = list;
+  renderApk(fx);
+}
+
+function renderApk(fx) {
+  const list = state.apk;
+  if (!list.length) {
+    $("apkOut").innerHTML = `<p class="note" style="margin:0">${esc(fx.age != null && fx.age < 4.2 ? t("apkTooNew") : t("apkNone"))}</p>`;
+    return;
+  }
+  const sum = (adv) => list.reduce((n, x) => n + x.defects.filter(d => d.advice === adv).reduce((m, d) => m + d.count, 0), 0);
+  const defects = sum(false), advice = sum(true);
+  const SHOW = 4;
+  const items = list.map((x, i) => {
+    const nDef = x.defects.filter(d => !d.advice).reduce((m, d) => m + d.count, 0);
+    const [cls, label] = nDef ? ["warn", nDef === 1 ? t("apkDefect1") : t("apkDefectN", { n: nDef })]
+      : x.defects.length ? ["ok", t("apkAdviceOnly")] : ["good", t("apkClean")];
+    const color = { good: "var(--good)", ok: "var(--ok)", warn: "var(--warn)" }[cls];
+    return `<li class="apk-item${i >= SHOW ? " hidden" : ""}"><span class="dot" style="background:${color}"></span>
+      <div class="apk-head"><b>${esc(fmtDate(x.date))}</b><span class="badge ${cls}">${esc(label)}</span></div>
+      ${x.defects.length ? `<ul>${x.defects.map(d => `<li>${d.advice ? `<span class="tag">${esc(t("apkAdviceTag"))}</span>` : ""}
+        <span>${esc(d.text)}</span>${d.count > 1 ? `<span class="x">${d.count}×</span>` : ""}</li>`).join("")}</ul>` : ""}</li>`;
+  }).join("");
+  const stats = [[t("apkChecks"), list.length], [t("apkDefectsL"), defects], [t("apkAdviceL"), advice]];
+  $("apkOut").innerHTML = `
+    <div class="tiles apk-stats">${stats.map(([l, v]) => `<div class="tile"><div class="l">${esc(l)}</div><div class="v">${v}</div></div>`).join("")}</div>
+    <ul class="apk-list">${items}</ul>
+    ${list.length > SHOW ? `<button type="button" class="link-btn" id="apkMore">${esc(t("apkMore", { n: list.length }))}</button>` : ""}
+    <p class="note">${esc(t("apkNote"))} ${esc(t("apkDutch"))}</p>`;
+  $("apkMore")?.addEventListener("click", (e) => {
+    document.querySelectorAll(".apk-item.hidden").forEach(el => el.classList.remove("hidden"));
+    e.currentTarget.remove();
+  });
 }
 
 function updateLink() {

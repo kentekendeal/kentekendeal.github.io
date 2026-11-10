@@ -12,7 +12,7 @@ Static site, no server, no build step for the app. Vehicle data comes live from
 
 | Path | What it is |
 |---|---|
-| `index.html` | The app: plate lookup, deal meter, monthly costs, specs. NL/EN switch. |
+| `index.html` | The app: plate lookup, deal meter, monthly costs, APK history, specs. NL/EN switch. |
 | `model.js` | All calculations: RDW lookup, value estimate, deal verdict, road tax, fuel cost. **Tunable numbers live in `PARAMS` at the top.** |
 | `i18n.js` | All user-facing text in Dutch and English (`t("key")`). Load before `model.js`. |
 | `calibrate.html` | Hidden tool (noindex): paste real ads (`PLATE KM PRICE`) → compares with our estimate and suggests better `PARAMS`. |
@@ -48,5 +48,6 @@ Events: `kenteken-gezocht`, `kenteken-niet-gevonden`, `deal-check`, `voorbeeld-g
 ## Data notes
 
 - Value estimate = catalogue price × depreciation curve × brand/fuel/mileage adjustments. It is an estimate, not a valuation.
+- APK history uses RDW datasets `sgfe-77wx` (inspections), `a34c-vvps` (defects found) and `hx2c-gt7k` (defect texts). RDW only publishes inspections from June 2022. Codes AC/RA/OP are advisories.
 - Road tax is calibrated on 2026 rates for an average province (Noord-Brabant, 87 opcenten). EVs pay 70% in 2026.
 - Fuel prices are constants in `model.js` (`FUEL_PRICE`); update roughly once a year.
