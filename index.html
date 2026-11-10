@@ -22,142 +22,335 @@
         onload="window.goatcounter.count({ path: location.pathname })"></script>
 <style>
   :root {
-    --bg: #f4f5f7; --card: #ffffff; --text: #16181d; --muted: #676d7a;
-    --line: #e3e5ea; --accent: #1f6feb; --good: #1a7f37; --warn: #b54708; --bad: #c62828;
-    --plate: #f7c600; --plate-blue: #1b3d8f; --field: #f8f9fb;
+    --navy: #0E1B3D; --navy-2: #1B3D8F; --yellow: #F7C600; --plate-blue: #1B3D8F;
+    --bg: #f3f5f9; --card: #ffffff; --text: #111827; --muted: #6b7280; --line: #e5e7eb; --field: #f9fafb;
+    --accent: #2563eb; --good: #15803d; --good-bg: #dcfce7; --ok: #1d4ed8; --ok-bg: #dbeafe;
+    --warn: #b45309; --warn-bg: #fef3c7; --bad: #b91c1c; --bad-bg: #fee2e2;
+    --shadow: 0 1px 2px rgba(16,24,40,.06), 0 4px 16px rgba(16,24,40,.06);
+    --c-tax: #1B3D8F; --c-fuel: #F59E0B; --c-dep: #EF4444;
   }
   @media (prefers-color-scheme: dark) {
     :root:not([data-theme="light"]) {
-      --bg: #0f1115; --card: #181b21; --text: #eceef2; --muted: #9aa1ad;
-      --line: #2a2e37; --accent: #4c8dff; --good: #3fb950; --warn: #e3a008; --bad: #f05252;
-      --field: #12151a;
+      --bg: #0b0f17; --card: #141a24; --text: #e5e7eb; --muted: #9ca3af; --line: #252d3a; --field: #0f141d;
+      --accent: #60a5fa; --good: #4ade80; --good-bg: #052e16; --ok: #93c5fd; --ok-bg: #172554;
+      --warn: #fbbf24; --warn-bg: #3b2705; --bad: #f87171; --bad-bg: #3f0d0d;
+      --shadow: 0 1px 2px rgba(0,0,0,.4);
+      --c-tax: #60a5fa;
     }
   }
   * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
   body { margin: 0; background: var(--bg); color: var(--text);
     font: 16px/1.5 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
-  main { max-width: 640px; margin: 0 auto; padding: 24px 16px 64px; }
-  .site-header { background: #0E1B3D; }
-  .site-header a { max-width: 640px; margin: 0 auto; padding: 12px 16px; display: flex; align-items: center;
-    gap: 10px; color: #fff; text-decoration: none; font-size: 1.35rem; letter-spacing: -0.5px; font-weight: 600; }
-  .site-header img { width: 36px; height: 36px; }
-  .site-header b { color: #4ADE80; font-weight: 800; }
-  h1 { font-size: 1.6rem; margin: 0 0 4px; }
-  .sub { color: var(--muted); margin: 0 0 24px; }
+  .wrap { max-width: 680px; margin: 0 auto; padding: 0 16px; }
+
+  /* ---------- header + hero ---------- */
+  .hero { background: radial-gradient(circle at 90% -10%, #2a4fb0 0%, var(--navy) 55%); color: #fff; padding-bottom: 28px; }
+  .site-header { display: flex; align-items: center; justify-content: space-between; padding: 14px 0; }
+  .brand { display: flex; align-items: center; gap: 10px; color: #fff; text-decoration: none;
+    font-size: 1.35rem; letter-spacing: -0.5px; font-weight: 600; }
+  .brand img { width: 36px; height: 36px; }
+  .brand b { color: #4ADE80; font-weight: 800; }
+  .hero h1 { font-size: clamp(1.7rem, 6vw, 2.4rem); line-height: 1.1; letter-spacing: -1px; margin: 14px 0 8px; }
+  .hero p.lead { color: #c7d2fe; margin: 0 0 20px; }
 
   #form { display: flex; gap: 8px; }
-  .plate { flex: 1; display: flex; border-radius: 8px; overflow: hidden;
-    border: 2px solid #111; background: var(--plate); }
-  .plate .nl { background: var(--plate-blue); color: #fff; font-weight: 700;
-    font-size: .8rem; display: flex; align-items: flex-end; justify-content: center;
-    width: 36px; padding-bottom: 6px; }
+  .plate { flex: 1; display: flex; border-radius: 10px; overflow: hidden; border: 3px solid #000;
+    background: var(--yellow); box-shadow: 0 8px 24px rgba(0,0,0,.25); }
+  .plate .nl { background: var(--plate-blue); color: #fff; font-weight: 700; font-size: .8rem;
+    display: flex; align-items: flex-end; justify-content: center; width: 38px; padding-bottom: 8px; flex: none; }
   .plate input { flex: 1; min-width: 0; border: 0; background: transparent; color: #111;
-    font: 700 1.6rem/1 "Arial Narrow", Arial, sans-serif; letter-spacing: 2px;
-    text-transform: uppercase; padding: 12px; outline: none; text-align: center; }
-  button { border: 0; border-radius: 8px; background: var(--accent); color: #fff;
-    font-weight: 600; font-size: 1rem; padding: 0 20px; cursor: pointer; }
-  button:disabled { opacity: .6; cursor: wait; }
+    font: 700 clamp(1.5rem, 7vw, 2rem)/1 "Arial Narrow", Arial, sans-serif; letter-spacing: 3px;
+    text-transform: uppercase; padding: 14px 8px; outline: none; text-align: center; }
+  .plate input::placeholder { color: rgba(0,0,0,.35); }
+  .btn { border: 0; border-radius: 10px; background: #16A34A; color: #fff; font-weight: 700; font-size: 1.05rem;
+    padding: 0 22px; cursor: pointer; box-shadow: 0 8px 24px rgba(0,0,0,.25); }
+  .btn:hover { background: #15803d; }
+  .btn:disabled { opacity: .6; cursor: wait; }
 
-  .msg { margin-top: 16px; color: var(--muted); }
+  .chips { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 14px; align-items: center; }
+  .chips .label { color: #a5b4fc; font-size: .85rem; margin-right: 2px; }
+  .chip { border: 1px solid rgba(255,255,255,.25); background: rgba(255,255,255,.08); color: #fff;
+    border-radius: 999px; padding: 5px 12px; font-size: .85rem; cursor: pointer; font: inherit; font-size: .85rem; }
+  .chip:hover { background: rgba(255,255,255,.18); }
+
+  /* ---------- content ---------- */
+  main.wrap { padding-top: 20px; padding-bottom: 48px; }
+  .card { background: var(--card); border: 1px solid var(--line); border-radius: 16px; padding: 20px;
+    margin-top: 16px; box-shadow: var(--shadow); }
+  .card:first-child { margin-top: 0; }
+  h2 { font-size: 1.05rem; margin: 0 0 14px; display: flex; align-items: center; gap: 8px; }
+  h2 .ico { width: 20px; height: 20px; color: var(--muted); }
+  .note { color: var(--muted); font-size: .82rem; margin: 10px 0 0; }
+  .msg { color: var(--muted); text-align: center; padding: 24px 0; }
   .msg.error { color: var(--bad); }
 
-  .card { background: var(--card); border: 1px solid var(--line); border-radius: 12px;
-    padding: 20px; margin-top: 16px; }
-  .title { font-size: 1.35rem; font-weight: 700; margin: 0; }
-  .meta { color: var(--muted); margin: 2px 0 0; }
-  h2 { font-size: 1rem; margin: 0 0 12px; }
+  /* how it works */
+  .steps { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+  .step { text-align: center; padding: 8px; }
+  .step .n { width: 36px; height: 36px; border-radius: 50%; background: var(--navy); color: #fff; font-weight: 800;
+    display: inline-flex; align-items: center; justify-content: center; margin-bottom: 8px; }
+  .step b { display: block; }
+  .step span { color: var(--muted); font-size: .85rem; }
+  @media (max-width: 520px) { .steps { grid-template-columns: 1fr; } .step { display: grid; grid-template-columns: 44px 1fr; text-align: left; gap: 0 10px; } .step .n { grid-row: span 2; } }
 
-  .inputs { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
-  @media (max-width: 520px) { .inputs { grid-template-columns: 1fr; } }
-  .inputs label { display: flex; flex-direction: column; gap: 4px; font-size: .85rem; color: var(--muted); }
-  .inputs input { font: inherit; color: var(--text); background: var(--field);
-    border: 1px solid var(--line); border-radius: 8px; padding: 10px 12px; width: 100%; }
-  .inputs input:focus { outline: 2px solid var(--accent); outline-offset: -1px; }
+  /* car header */
+  .car-head { display: flex; gap: 16px; align-items: center; }
+  .car-head svg.car { width: 110px; height: 48px; flex: none; }
+  .car-title { font-size: 1.4rem; font-weight: 800; margin: 0; letter-spacing: -0.3px; line-height: 1.2; }
+  .car-sub { color: var(--muted); margin: 2px 0 0; font-size: .92rem; }
+  .tiles { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-top: 16px; }
+  .tile { background: var(--field); border: 1px solid var(--line); border-radius: 12px; padding: 10px; }
+  .tile .l { color: var(--muted); font-size: .72rem; text-transform: uppercase; letter-spacing: .4px; }
+  .tile .v { font-weight: 700; font-size: .98rem; margin-top: 2px; }
+  @media (max-width: 520px) { .tiles { grid-template-columns: repeat(2, 1fr); } .car-head svg.car { width: 84px; height: 37px; } }
+  .badges { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 14px; }
+  .badge { font-size: .8rem; font-weight: 600; padding: 4px 10px; border-radius: 999px; }
+  .badge.good { color: var(--good); background: var(--good-bg); }
+  .badge.warn { color: var(--warn); background: var(--warn-bg); }
+  .badge.bad  { color: var(--bad);  background: var(--bad-bg); }
+  .actions { display: flex; gap: 8px; margin-top: 14px; }
+  .link-btn { border: 1px solid var(--line); background: var(--card); color: var(--text); border-radius: 10px;
+    padding: 8px 14px; font: inherit; font-size: .9rem; font-weight: 600; cursor: pointer; display: inline-flex; gap: 6px; align-items: center; }
+  .link-btn:hover { border-color: var(--accent); color: var(--accent); }
 
-  .value { text-align: center; }
-  .value .label { color: var(--muted); font-size: .9rem; }
-  .value .range { font-size: 2rem; font-weight: 800; margin: 4px 0; }
-  .note { color: var(--muted); font-size: .85rem; margin: 8px 0 0; }
+  /* deal inputs */
+  .inputs { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .inputs label { display: flex; flex-direction: column; gap: 4px; font-size: .85rem; color: var(--muted); font-weight: 600; }
+  .inputs input, .inline-input input { font: inherit; font-size: 1.05rem; color: var(--text); background: var(--field);
+    border: 1px solid var(--line); border-radius: 10px; padding: 11px 12px; width: 100%; }
+  .inputs input:focus, .inline-input input:focus { outline: 2px solid var(--accent); outline-offset: -1px; }
 
-  .verdict { text-align: center; border-width: 2px; }
-  .verdict .big { font-size: 1.6rem; font-weight: 800; margin: 0; }
-  .verdict.good { border-color: var(--good); } .verdict.good .big { color: var(--good); }
-  .verdict.ok   { border-color: var(--accent); } .verdict.ok .big { color: var(--accent); }
-  .verdict.warn { border-color: var(--warn); } .verdict.warn .big { color: var(--warn); }
-  .verdict.bad  { border-color: var(--bad);  } .verdict.bad .big  { color: var(--bad); }
-  .verdict p { margin: 6px 0 0; }
+  /* value + meter */
+  .value-range { text-align: center; margin: 18px 0 4px; }
+  .value-range .l { color: var(--muted); font-size: .88rem; }
+  .value-range .v { font-size: clamp(1.7rem, 7vw, 2.2rem); font-weight: 800; letter-spacing: -0.5px; font-variant-numeric: tabular-nums; }
+  .meter { position: relative; margin: 30px 0 8px; }
+  .meter .bar { display: flex; height: 14px; border-radius: 999px; overflow: hidden; }
+  .meter .bar span { height: 100%; }
+  .meter .labels { position: relative; height: 18px; color: var(--muted); font-size: .75rem; margin-top: 6px; }
+  .meter .labels span { position: absolute; transform: translateX(-50%); white-space: nowrap; }
+  .meter .labels span:first-child { transform: none; }
+  .meter .labels span:last-child { transform: translateX(-100%); }
+  .meter .marker { position: absolute; top: -26px; transform: translateX(-50%); transition: left .9s cubic-bezier(.2,.8,.2,1);
+    display: flex; flex-direction: column; align-items: center; pointer-events: none; }
+  .meter .marker .tag { background: var(--text); color: var(--card); font-size: .72rem; font-weight: 700; padding: 2px 8px; border-radius: 6px; white-space: nowrap; }
+  .meter .marker .pin { width: 3px; height: 26px; background: var(--text); border-radius: 2px; }
+  .verdict { margin-top: 18px; border-radius: 14px; padding: 16px; text-align: center; }
+  .verdict .big { font-size: 1.5rem; font-weight: 800; margin: 0; }
+  .verdict p { margin: 4px 0 0; }
+  .verdict.good { background: var(--good-bg); color: var(--good); }
+  .verdict.ok { background: var(--ok-bg); color: var(--ok); }
+  .verdict.warn { background: var(--warn-bg); color: var(--warn); }
+  .verdict.bad { background: var(--bad-bg); color: var(--bad); }
+  .hint { margin-top: 16px; text-align: center; color: var(--muted); font-size: .9rem; background: var(--field);
+    border: 1px dashed var(--line); border-radius: 12px; padding: 12px; }
 
-  .badges { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
-  .badge { font-size: .85rem; padding: 4px 10px; border-radius: 999px; border: 1px solid var(--line); }
-  .badge.good { color: var(--good); border-color: currentColor; }
-  .badge.warn { color: var(--warn); border-color: currentColor; }
-  .badge.bad  { color: var(--bad);  border-color: currentColor; }
+  /* costs */
+  .cost-total { display: flex; align-items: baseline; gap: 6px; }
+  .cost-total .v { font-size: 2rem; font-weight: 800; letter-spacing: -0.5px; font-variant-numeric: tabular-nums; }
+  .cost-total .l { color: var(--muted); }
+  .stack { display: flex; height: 12px; border-radius: 999px; overflow: hidden; margin: 12px 0 14px; background: var(--field); }
+  .stack span { height: 100%; transition: width .6s ease; }
+  .cost-row { display: flex; align-items: center; gap: 10px; padding: 8px 0; border-bottom: 1px solid var(--line); }
+  .cost-row:last-of-type { border-bottom: 0; }
+  .dot { width: 10px; height: 10px; border-radius: 50%; flex: none; }
+  .cost-row .name { flex: 1; }
+  .cost-row .name small { display: block; color: var(--muted); font-size: .78rem; }
+  .cost-row .amt { font-weight: 700; font-variant-numeric: tabular-nums; }
+  .inline-input { display: flex; align-items: center; gap: 10px; margin-top: 12px; font-size: .88rem; color: var(--muted); }
+  .inline-input input { width: 120px; padding: 7px 10px; font-size: .95rem; }
 
-  dl { display: grid; grid-template-columns: 1fr auto; gap: 0; margin: 0; }
-  dt, dd { padding: 8px 0; border-bottom: 1px solid var(--line); margin: 0; }
+  /* specs */
+  details { border-top: 1px solid var(--line); }
+  details:first-of-type { border-top: 0; }
+  summary { cursor: pointer; padding: 12px 0; font-weight: 700; list-style: none; display: flex; justify-content: space-between; }
+  summary::-webkit-details-marker { display: none; }
+  summary::after { content: "+"; color: var(--muted); font-weight: 400; font-size: 1.2rem; line-height: 1; }
+  details[open] summary::after { content: "−"; }
+  dl { display: grid; grid-template-columns: 1fr auto; margin: 0 0 12px; }
+  dt, dd { padding: 7px 0; border-bottom: 1px solid var(--line); margin: 0; font-size: .93rem; }
   dt { color: var(--muted); }
-  dd { text-align: right; font-weight: 500; font-variant-numeric: tabular-nums; }
-  dl .total { color: var(--text); font-weight: 700; border-bottom: 0; }
-  footer { color: var(--muted); font-size: .8rem; margin-top: 24px; text-align: center; }
+  dd { text-align: right; font-weight: 600; font-variant-numeric: tabular-nums; }
+  dl > :nth-last-child(-n+2) { border-bottom: 0; }
+
+  /* skeleton */
+  .skel { background: linear-gradient(90deg, var(--field) 25%, var(--line) 50%, var(--field) 75%); background-size: 200% 100%;
+    animation: sh 1.2s infinite; border-radius: 10px; }
+  @keyframes sh { to { background-position: -200% 0; } }
+
+  footer { color: var(--muted); font-size: .8rem; text-align: center; padding: 8px 0 32px; }
+  footer a { color: inherit; }
+  @media (prefers-reduced-motion: reduce) { .meter .marker, .stack span { transition: none; } .skel { animation: none; } }
 </style>
 </head>
 <body>
-<header class="site-header">
-  <a href="./" aria-label="KentekenDeal home"><img src="assets/logo-icon.svg" alt="">kenteken<b>deal</b></a>
-</header>
-<main>
-  <h1>Is deze auto zijn prijs waard?</h1>
-  <p class="sub">Vul een kenteken in: specificaties, wat de auto waard is, of de vraagprijs eerlijk is en wat hij per maand kost.</p>
+<section class="hero">
+  <div class="wrap">
+    <header class="site-header">
+      <a class="brand" href="./" aria-label="KentekenDeal home"><img src="assets/logo-icon.svg" alt="">kenteken<b>deal</b></a>
+    </header>
+    <h1>Is deze auto zijn prijs waard?</h1>
+    <p class="lead">Vul een kenteken in en zie direct wat de auto waard is, of de vraagprijs eerlijk is en wat hij per maand kost.</p>
+    <form id="form" autocomplete="off">
+      <div class="plate"><span class="nl">NL</span>
+        <input id="plate" placeholder="XX-123-X" maxlength="10" aria-label="Kenteken" enterkeyhint="search">
+      </div>
+      <button class="btn" id="go">Check</button>
+    </form>
+    <div class="chips" id="chips"></div>
+  </div>
+</section>
 
-  <form id="form">
-    <div class="plate"><span class="nl">NL</span>
-      <input id="plate" placeholder="XX-123-X" maxlength="10" autocomplete="off" autofocus>
-    </div>
-    <button id="go">Check</button>
-  </form>
-
+<main class="wrap">
   <div id="out"></div>
-
-  <footer>Data: RDW Open Data. Waarde en kosten zijn schattingen, geen taxatie of officiële berekening.</footer>
 </main>
+
+<footer class="wrap">
+  Data: RDW Open Data. Waarde en kosten zijn schattingen, geen taxatie of officiële berekening.<br>
+  © KentekenDeal
+</footer>
 
 <script src="model.js"></script>
 <script>
 const $ = (id) => document.getElementById(id);
-let state = null; // { car, fuel }
+let state = null;          // { car, fuel }
 let dealTracked = false;
+let lastMarker = 50;       // meter marker position (%), so it animates from where it was
 
-// Count an action in GoatCounter. Only the event name is sent, never the plate.
+// Example ads (dealer listings) to try the deal check in one tap.
+const EXAMPLES = [
+  { k: "KLJ73X", km: 11250, p: 34000, label: "Nissan Qashqai" },
+  { k: "T780VD", km: 48032, p: 31250, label: "Skoda Karoq" },
+  { k: "KTL87L", km: 75545, p: 21500, label: "Lynk & Co 01" },
+];
+
+// ---------- analytics (only event names, never plates) ----------
 function track(name) {
   try { window.goatcounter?.count?.({ path: name, title: name, event: true }); } catch {}
 }
-// ---------- rendering ----------
+
+// ---------- recent searches (this browser only) ----------
+function getRecent() { try { return JSON.parse(localStorage.getItem("recent") || "[]"); } catch { return []; } }
+function addRecent(car) {
+  try {
+    const list = getRecent().filter(r => r.k !== car.kenteken);
+    list.unshift({ k: car.kenteken, label: carName(car) });
+    localStorage.setItem("recent", JSON.stringify(list.slice(0, 5)));
+  } catch {}
+}
+
+function renderChips() {
+  const recent = getRecent();
+  const items = recent.length
+    ? `<span class="label">Recent:</span>` + recent.map(r => `<button type="button" class="chip" data-k="${esc(r.k)}">${esc(r.label)}</button>`).join("")
+    : `<span class="label">Probeer:</span>` + EXAMPLES.map((e, i) => `<button type="button" class="chip" data-ex="${i}">${esc(e.label)}</button>`).join("");
+  $("chips").innerHTML = items;
+}
+$("chips").addEventListener("click", (e) => {
+  const b = e.target.closest(".chip"); if (!b) return;
+  if (b.dataset.ex) {
+    const ex = EXAMPLES[+b.dataset.ex];
+    history.replaceState(null, "", `?k=${ex.k}&km=${ex.km}&p=${ex.p}`);
+    $("plate").value = ex.k; search(ex.k); track("voorbeeld-geklikt");
+  } else {
+    history.replaceState(null, "", `?k=${b.dataset.k}`);
+    $("plate").value = b.dataset.k; search(b.dataset.k);
+  }
+});
+
+// ---------- small visuals ----------
+const ICON = {
+  euro: `<svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 7a6 6 0 1 0 0 10M4 10h9M4 14h9"/></svg>`,
+  wallet: `<svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="6" width="18" height="13" rx="2"/><path d="M3 10h18M16 14h2"/></svg>`,
+  list: `<svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></svg>`,
+  share: `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12v7a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-7M16 6l-4-4-4 4M12 2v13"/></svg>`,
+};
+
+const COLORS = { ZWART: "#1f2328", WIT: "#f3f4f6", GRIJS: "#8b929c", BLAUW: "#2563eb", ROOD: "#dc2626", GROEN: "#16a34a",
+  GEEL: "#facc15", ORANJE: "#f97316", BRUIN: "#8b5a2b", BEIGE: "#d6c6a5", PAARS: "#7c3aed", ROZE: "#ec4899", CREME: "#f1e9d2" };
+
+// Generic side-view silhouette, tinted in the car's registered colour.
+function carSvg(car) {
+  const fill = COLORS[car.eerste_kleur] || "#9ca3af";
+  const tall = /mpv|terrein|suv|bus/i.test(car.inrichting || "");
+  const body = tall
+    ? "M6 36 L8 22 Q10 14 20 13 L66 11 Q78 11 86 19 L96 25 Q108 27 110 32 L110 38 Q110 40 107 40 L6 40 Z"
+    : "M4 36 L6 28 Q8 24 16 23 L30 21 L44 12 Q48 10 56 10 L74 10 Q82 10 88 16 L94 22 Q108 24 112 30 L112 38 Q112 40 109 40 L4 40 Z";
+  const win = tall
+    ? "M22 16 L50 15 L50 24 L16 25 Q16 18 22 16 Z M54 15 L68 14 Q76 15 82 21 L54 24 Z"
+    : "M46 14 Q49 13 56 13 L64 13 L64 22 L36 22 Z M68 13 L74 13 Q80 14 85 21 L68 22 Z";
+  return `<svg class="car" viewBox="0 0 116 48" aria-hidden="true">
+    <path d="${body}" fill="${fill}" stroke="rgba(0,0,0,.35)" stroke-width="1.5" stroke-linejoin="round"/>
+    <path d="${win}" fill="#bfdbfe" opacity=".85"/>
+    <circle cx="28" cy="40" r="7.5" fill="#111"/><circle cx="28" cy="40" r="3" fill="#9ca3af"/>
+    <circle cx="90" cy="40" r="7.5" fill="#111"/><circle cx="90" cy="40" r="3" fill="#9ca3af"/>
+  </svg>`;
+}
+
+const hp = (kw) => Math.round(kw * 1.36);
+function powerText(fx) {
+  if (!fx.kw && !fx.kwElec) return null;
+  if (fx.kwElec && fx.kw) return `${hp(fx.kw)} pk + ${hp(fx.kwElec)} pk elektrisch`;
+  return `${hp(fx.kw || fx.kwElec)} pk`;
+}
+
+// Meter scale: asking price from 50% to 150% of our estimate.
+const ZONES = [[0.5, 0.6, "var(--c-fuel)"], [0.6, 0.88, "#22c55e"], [0.88, 1.1, "#3b82f6"], [1.1, 1.3, "#f59e0b"], [1.3, 1.5, "#ef4444"]];
+const ratioToPct = (r) => Math.min(100, Math.max(0, (r - 0.5) / 1.0 * 100));
+
+// ---------- render: home ----------
+function renderHome() {
+  $("out").innerHTML = `
+    <div class="card">
+      <h2>Zo werkt het</h2>
+      <div class="steps">
+        <div class="step"><div class="n">1</div><b>Vul het kenteken in</b><span>We halen alle gegevens op bij de RDW.</span></div>
+        <div class="step"><div class="n">2</div><b>Vul de vraagprijs in</b><span>Uit de advertentie, plus de kilometerstand.</span></div>
+        <div class="step"><div class="n">3</div><b>Zie of het een deal is</b><span>Van koopje tot te duur, plus de kosten per maand.</span></div>
+      </div>
+    </div>`;
+}
+
+// ---------- render: results ----------
 function renderAll() {
   const { car, fuel } = state;
   const fx = facts(car, fuel);
-  const km = num($("km")?.value ?? "");
-  const asking = num($("ask")?.value ?? "");
+  const km = num($("km").value);
+  const asking = num($("ask").value);
   const kmYear = num($("kmy")?.value ?? "") || 12000;
-
   const v = estimateValue(car, fx, km);
+
+  // value + deal
   let html = "";
+  if (v.ok) {
+    let markerHtml = "", verdictHtml = "";
+    if (asking) {
+      const [cls, title, text] = verdict(asking, v);
+      if (!dealTracked && asking >= 1000) { dealTracked = true; track("deal-check"); }
+      markerHtml = `<div class="marker" id="marker" style="left:${lastMarker}%"><span class="tag">${euro(asking)}</span><span class="pin"></span></div>`;
+      verdictHtml = `<div class="verdict ${cls}"><p class="big">${esc(title)}</p><p>${esc(text)}</p></div>`;
+    }
+    html += `
+      <div class="value-range"><div class="l">Je koopt deze auto ongeveer voor</div><div class="v">${euro(v.low)} – ${euro(v.high)}</div></div>
+      <div class="meter">
+        ${markerHtml}
+        <div class="bar">${ZONES.map(([a, b, c]) => `<span style="width:${(b - a) * 100}%;background:${c}"></span>`).join("")}</div>
+        <div class="labels"><span style="left:0">Te goedkoop?</span><span style="left:24%">Koopje</span><span style="left:49%">Eerlijk</span><span style="left:70%">Prijzig</span><span style="left:100%">Te duur</span></div>
+      </div>
+      ${verdictHtml || `<div class="hint">Vul de <b>vraagprijs</b> in om te zien of het een goede deal is.</div>`}
+      <p class="note">Nieuwprijs ${euro(v.price)} · ${v.age.toFixed(1)} jaar oud${v.notes.length ? " · " + esc(v.notes.join(", ")) : ""}.
+        ${v.withKm ? "Staat en opties zijn niet meegenomen." : "Met de kilometerstand wordt de schatting scherper."}</p>`;
+  } else {
+    html += `<p class="note">${esc(v.reason)}</p>`;
+  }
+  $("valueOut").innerHTML = html;
 
-  // value
-  html += v.ok
-    ? `<div class="card value">
-         <div class="label">Je koopt deze auto ongeveer voor</div>
-         <div class="range">${euro(v.low)} – ${euro(v.high)}</div>
-         <p class="note">Nieuwprijs ${euro(v.price)} · ${v.age.toFixed(1)} jaar oud${v.notes.length ? " · " + esc(v.notes.join(", ")) : ""}.<br>
-         ${v.withKm ? "Staat en opties zijn niet meegenomen." : "Vul de kilometerstand in voor een scherpere schatting."}</p>
-       </div>`
-    : `<div class="card value"><div class="label">Waardeschatting</div><p class="note">${esc(v.reason)}</p></div>`;
-
-  // deal verdict
+  // animate the marker to its new spot
   if (v.ok && asking) {
-    const [cls, title, text] = verdict(asking, v);
-    if (!dealTracked && asking >= 1000) { dealTracked = true; track("deal-check"); }
-    html +=`<div class="card verdict ${cls}"><p class="big">${esc(title)}</p><p>${esc(text)}</p>
-             ${km == null ? `<p class="note">Tip: vul ook de kilometerstand in, dan is dit oordeel betrouwbaarder.</p>` : ""}</div>`;
+    const target = ratioToPct(asking / v.mid);
+    requestAnimationFrame(() => requestAnimationFrame(() => { const m = $("marker"); if (m) m.style.left = target + "%"; }));
+    lastMarker = target;
   }
 
   // monthly costs
@@ -168,20 +361,18 @@ function renderAll() {
     const next = estimateValue(car, fx, km != null ? km + kmYear : null, 1);
     if (next.ok) dep = Math.max(0, (v.mid - next.mid) / 12);
   }
-  const costRows = [];
-  if (tax) costRows.push(["Wegenbelasting" + (tax.note ? ` (${tax.note})` : ""), tax.amount]);
-  if (fuelCost) costRows.push([`${fx.isEV ? "Stroom" : "Brandstof"} (${fuelCost.use})`, fuelCost.amount]);
-  if (dep != null) costRows.push(["Waardeverlies", dep]);
-  if (costRows.length) {
-    const total = costRows.reduce((s, [, a]) => s + a, 0);
-    html += `<div class="card"><h2>Wat kost deze auto per maand?</h2>
-      <dl>${costRows.map(([k, a]) => `<dt>${esc(k)}</dt><dd>${euro(a)}</dd>`).join("")}
-        <dt class="total">Totaal (excl. verzekering en onderhoud)</dt><dd class="total">${euro(total)}</dd></dl>
-      <p class="note">Bij ${kmYear.toLocaleString("nl-NL")} km per jaar. Wegenbelasting is een schatting voor een gemiddelde provincie (2026).
-      Brandstof: benzine € ${FUEL_PRICE.benzine.toFixed(2)}, diesel € ${FUEL_PRICE.diesel.toFixed(2)}, stroom € ${FUEL_PRICE.elektriciteit.toFixed(2)}/kWh.</p></div>`;
-  }
-
-  $("results").innerHTML = html;
+  const rows = [];
+  if (tax) rows.push(["Wegenbelasting", tax.note || "schatting gemiddelde provincie", tax.amount, "var(--c-tax)"]);
+  if (fuelCost) rows.push([fx.isEV ? "Stroom" : "Brandstof", fuelCost.use, fuelCost.amount, "var(--c-fuel)"]);
+  if (dep != null) rows.push(["Waardeverlies", "wat de auto per maand minder waard wordt", dep, "var(--c-dep)"]);
+  const total = rows.reduce((s, r) => s + r[2], 0);
+  $("costOut").innerHTML = rows.length ? `
+    <div class="cost-total"><span class="v">${euro(total)}</span><span class="l">per maand</span></div>
+    <div class="stack">${rows.map(r => `<span style="width:${total ? r[2] / total * 100 : 0}%;background:${r[3]}"></span>`).join("")}</div>
+    ${rows.map(([n, sub, a, c]) => `<div class="cost-row"><span class="dot" style="background:${c}"></span>
+      <span class="name">${esc(n)}<small>${esc(sub)}</small></span><span class="amt">${euro(a)}</span></div>`).join("")}
+    <p class="note">Exclusief verzekering en onderhoud. Brandstof: benzine € ${FUEL_PRICE.benzine.toFixed(2)}, diesel € ${FUEL_PRICE.diesel.toFixed(2)}, stroom € ${FUEL_PRICE.elektriciteit.toFixed(2)}/kWh.</p>`
+    : `<p class="note">Voor dit voertuig kunnen we geen kosten berekenen.</p>`;
 }
 
 function renderCar() {
@@ -189,9 +380,7 @@ function renderCar() {
   const fx = facts(car, fuel);
   const firstNL = parseDate(car.datum_eerste_tenaamstelling_in_nederland);
   const apk = parseDate(car.vervaldatum_apk);
-  const year = fx.first ? fx.first.getFullYear() : "";
-  const hp = fx.kw ? Math.round(fx.kw * 1.36) : null;
-  const fuelLabel = fuel.map(x => x.brandstof_omschrijving).filter(Boolean).join(" + ");
+  const year = fx.first ? fx.first.getFullYear() : "–";
 
   const badges = [];
   if (apk) {
@@ -205,49 +394,78 @@ function renderCar() {
   if (fx.first && firstNL && firstNL - fx.first > 180 * 864e5) badges.push(["warn", "Geïmporteerd"]);
 
   const f = fx.isEV ? fx.f : fx.main;
-  const rows = [
-    ["Kenteken", car.kenteken],
-    ["Soort", car.voertuigsoort],
+  const kg = (n) => n ? `${(+n).toLocaleString("nl-NL")} kg` : null;
+  const cm = (n) => n ? `${(+n / 100).toFixed(2).replace(".", ",")} m` : null;
+  const groups = [
+    ["Motor & verbruik", [
+      ["Brandstof", fx.fuelLabel],
+      ["Vermogen", powerText(fx)],
+      ["Motorinhoud", car.cilinderinhoud ? `${car.cilinderinhoud} cc` : null],
+      ["Cilinders", car.aantal_cilinders],
+      ["Verbruik (WLTP)", f.brandstof_verbruik_gecombineerd_wltp ? `${(+f.brandstof_verbruik_gecombineerd_wltp).toFixed(1)} l/100 km` : null],
+      ["Stroomverbruik (WLTP)", fx.elec?.elektrisch_verbruik_enkel_elektrisch_wltp ? `${Math.round(fx.elec.elektrisch_verbruik_enkel_elektrisch_wltp / 10)} kWh/100 km` : null],
+      ["Elektrische actieradius", fx.elec?.actie_radius_enkel_elektrisch_wltp ? `${fx.elec.actie_radius_enkel_elektrisch_wltp} km` : null],
+      ["CO₂ (WLTP)", f.emissie_co2_gecombineerd_wltp ? `${f.emissie_co2_gecombineerd_wltp} g/km` : null],
+      ["Emissieklasse", f.uitlaatemissieniveau],
+      ["Topsnelheid", car.maximale_constructiesnelheid ? `${car.maximale_constructiesnelheid} km/u` : null],
+    ]],
+    ["Afmetingen & gewicht", [
+      ["Carrosserie", car.inrichting ? cap(car.inrichting) : null],
+      ["Deuren / zitplaatsen", car.aantal_deuren || car.aantal_zitplaatsen ? `${car.aantal_deuren || "–"} / ${car.aantal_zitplaatsen || "–"}` : null],
+      ["Lengte × breedte × hoogte", car.lengte && car.breedte && car.hoogte_voertuig ? `${cm(car.lengte)} × ${cm(car.breedte)} × ${cm(car.hoogte_voertuig)}` : null],
+      ["Leeggewicht", kg(car.massa_ledig_voertuig)],
+      ["Max. trekgewicht geremd", kg(car.maximum_trekken_massa_geremd)],
+      ["Max. trekgewicht ongeremd", kg(car.maximum_massa_trekken_ongeremd)],
+    ]],
+    ["Registratie", [
+      ["Kenteken", car.kenteken],
+      ["Eerste toelating", fmtDate(fx.first)],
+      ["Eerste keer op NL kenteken", fmtDate(firstNL)],
+      ["APK tot", fmtDate(apk)],
+      ["Kleur", known(car.eerste_kleur) ? cap(car.eerste_kleur) : null],
+      ["Nieuwprijs (catalogus)", car.catalogusprijs ? euro(+car.catalogusprijs) : null],
+      ["Zuinigheidslabel", car.zuinigheidsclassificatie],
+    ]],
+  ].map(([t, rows]) => [t, rows.filter(([, val]) => val)]).filter(([, rows]) => rows.length);
+
+  const tiles = [
     ["Bouwjaar", year],
-    ["Eerste toelating", fmtDate(fx.first)],
-    ["Eerste keer op NL kenteken", fmtDate(firstNL)],
-    ["APK tot", fmtDate(apk)],
-    ["Brandstof", fuelLabel],
-    ["Vermogen", fx.kw ? `${fx.kw} kW (${hp} pk)` : null],
-    ["Motorinhoud", car.cilinderinhoud ? `${car.cilinderinhoud} cc` : null],
-    ["Cilinders", car.aantal_cilinders],
-    ["Verbruik (WLTP)", f.brandstof_verbruik_gecombineerd_wltp ? `${(+f.brandstof_verbruik_gecombineerd_wltp).toFixed(1)} l/100 km` : null],
-    ["Stroomverbruik (WLTP)", fx.f.elektrisch_verbruik_enkel_elektrisch_wltp ? `${Math.round(fx.f.elektrisch_verbruik_enkel_elektrisch_wltp / 10)} kWh/100 km` : null],
-    ["Actieradius (WLTP)", fx.f.actie_radius_enkel_elektrisch_wltp ? `${fx.f.actie_radius_enkel_elektrisch_wltp} km` : null],
-    ["CO₂ (WLTP)", f.emissie_co2_gecombineerd_wltp ? `${f.emissie_co2_gecombineerd_wltp} g/km` : null],
-    ["Emissieklasse", f.uitlaatemissieniveau],
-    ["Kleur", known(car.eerste_kleur) ? cap(car.eerste_kleur) : null],
-    ["Carrosserie", car.inrichting],
-    ["Deuren / zitplaatsen", car.aantal_deuren || car.aantal_zitplaatsen ? `${car.aantal_deuren || "–"} / ${car.aantal_zitplaatsen || "–"}` : null],
-    ["Leeggewicht", car.massa_ledig_voertuig ? `${(+car.massa_ledig_voertuig).toLocaleString("nl-NL")} kg` : null],
-    ["Max. trekgewicht geremd", car.maximum_trekken_massa_geremd ? `${(+car.maximum_trekken_massa_geremd).toLocaleString("nl-NL")} kg` : null],
-    ["Topsnelheid", car.maximale_constructiesnelheid ? `${car.maximale_constructiesnelheid} km/u` : null],
-    ["Nieuwprijs (catalogus)", car.catalogusprijs ? euro(+car.catalogusprijs) : null],
-  ].filter(([, val]) => val);
+    ["Vermogen", fx.kw ? `${hp(fx.kw)} pk` + (fx.kwElec ? " + E" : "") : "–"],
+    ["Brandstof", fx.isEV ? "Elektrisch" : fx.isPHEV ? "Plug-in" : fx.isHybrid ? "Hybride" : cap(fx.fuelType) || "–"],
+    ["APK tot", apk ? apk.toLocaleDateString("nl-NL", { month: "short", year: "numeric" }) : "–"],
+  ];
 
   $("out").innerHTML = `
     <div class="card">
-      <p class="title">${esc(carName(car))}</p>
-      <p class="meta">${esc([year, fuelLabel, hp ? hp + " pk" : ""].filter(Boolean).join(" · "))}</p>
-      <div class="badges">${badges.map(([c, t]) => `<span class="badge ${c}">${esc(t)}</span>`).join("")}</div>
-    </div>
-    <div class="card">
-      <h2>Staat de auto te koop? Vul de advertentie in</h2>
-      <div class="inputs">
-        <label>Kilometerstand<input id="km" inputmode="numeric" placeholder="bijv. 85000"></label>
-        <label>Vraagprijs (€)<input id="ask" inputmode="numeric" placeholder="bijv. 8500"></label>
-        <label>Jouw km per jaar<input id="kmy" inputmode="numeric" placeholder="12000"></label>
+      <div class="car-head">
+        ${carSvg(car)}
+        <div><p class="car-title">${esc(carName(car))}</p>
+          <p class="car-sub">${esc([year, fx.fuelLabel, car.inrichting ? cap(car.inrichting) : ""].filter(Boolean).join(" · "))}</p></div>
       </div>
+      <div class="tiles">${tiles.map(([l, val]) => `<div class="tile"><div class="l">${esc(l)}</div><div class="v">${esc(val)}</div></div>`).join("")}</div>
+      <div class="badges">${badges.map(([c, t]) => `<span class="badge ${c}">${esc(t)}</span>`).join("")}</div>
+      <div class="actions"><button type="button" class="link-btn" id="share">${ICON.share} Deel deze check</button></div>
     </div>
-    <div id="results"></div>
+
     <div class="card">
-      <h2>Specificaties</h2>
-      <dl>${rows.map(([k, val]) => `<dt>${esc(k)}</dt><dd>${esc(val)}</dd>`).join("")}</dl>
+      <h2>${ICON.euro} Waarde & deal-check</h2>
+      <div class="inputs">
+        <label>Vraagprijs (€)<input id="ask" inputmode="numeric" placeholder="bijv. 8500"></label>
+        <label>Kilometerstand<input id="km" inputmode="numeric" placeholder="bijv. 85000"></label>
+      </div>
+      <div id="valueOut"></div>
+    </div>
+
+    <div class="card">
+      <h2>${ICON.wallet} Kosten per maand</h2>
+      <div id="costOut"></div>
+      <label class="inline-input">Jouw km per jaar <input id="kmy" inputmode="numeric" placeholder="12000"></label>
+    </div>
+
+    <div class="card">
+      <h2>${ICON.list} Specificaties</h2>
+      ${groups.map(([t, rows], i) => `<details ${i === 0 ? "open" : ""}><summary>${esc(t)}</summary>
+        <dl>${rows.map(([k, val]) => `<dt>${esc(k)}</dt><dd>${esc(val)}</dd>`).join("")}</dl></details>`).join("")}
     </div>`;
 
   // Prefill from link (?k=..&km=..&p=..&j=..) so a deal check can be shared.
@@ -256,6 +474,7 @@ function renderCar() {
     if (q.get(key)) $(id).value = q.get(key);
     $(id).addEventListener("input", () => { renderAll(); updateLink(); });
   }
+  $("share").addEventListener("click", share);
   renderAll();
 }
 
@@ -268,38 +487,61 @@ function updateLink() {
   history.replaceState(null, "", "?" + p);
 }
 
+async function share() {
+  const url = location.href;
+  const title = `${carName(state.car)}: is dit een goede deal?`;
+  track("gedeeld");
+  try {
+    if (navigator.share) { await navigator.share({ title, url }); return; }
+    await navigator.clipboard.writeText(url);
+    $("share").textContent = "Link gekopieerd ✓";
+  } catch { /* user cancelled */ }
+}
+
+function renderLoading() {
+  $("out").innerHTML = `<div class="card"><div class="skel" style="height:52px;width:70%"></div>
+    <div class="skel" style="height:64px;margin-top:16px"></div></div>
+    <div class="card"><div class="skel" style="height:120px"></div></div>`;
+}
+
+// ---------- search ----------
 async function search(raw) {
   const plate = clean(raw);
   if (plate.length < 4) {
-    $("out").innerHTML = `<p class="msg error">Vul een geldig kenteken in.</p>`;
+    $("out").innerHTML = `<div class="card"><p class="msg error">Vul een geldig kenteken in.</p></div>`;
     return;
   }
   $("go").disabled = true;
-  $("out").innerHTML = `<p class="msg">Bezig met opzoeken…</p>`;
+  lastMarker = 50;
+  renderLoading();
   try {
     const { car, fuel } = await lookup(plate);
     if (!car) {
       track("kenteken-niet-gevonden");
-      $("out").innerHTML = `<p class="msg error">Geen voertuig gevonden met kenteken ${esc(plate)}.</p>`;
+      $("out").innerHTML = `<div class="card"><p class="msg error">Geen voertuig gevonden met kenteken ${esc(plate)}.<br>
+        <small>Controleer het kenteken. Buitenlandse kentekens kunnen we niet opzoeken.</small></p></div>`;
       return;
     }
-    const keep = clean(new URLSearchParams(location.search).get("k") || "") === plate;
+    if (clean(new URLSearchParams(location.search).get("k") || "") !== plate) history.replaceState(null, "", `?k=${plate}`);
     state = { car, fuel };
     dealTracked = false;
     track("kenteken-gezocht");
-    if (!keep) history.replaceState(null, "", `?k=${plate}`); // shareable link
+    addRecent(car);
+    renderChips();
     renderCar();
   } catch (err) {
-    $("out").innerHTML = `<p class="msg error">${esc(err.message || "Er ging iets mis.")}</p>`;
+    $("out").innerHTML = `<div class="card"><p class="msg error">${esc(err.message || "Er ging iets mis.")}</p></div>`;
   } finally {
     $("go").disabled = false;
   }
 }
 
-$("form").addEventListener("submit", (e) => { e.preventDefault(); search($("plate").value); });
+$("form").addEventListener("submit", (e) => { e.preventDefault(); $("plate").blur(); search($("plate").value); });
 
+renderChips();
 const initial = new URLSearchParams(location.search).get("k");
 if (initial) { $("plate").value = initial; search(initial); }
+else renderHome();
 </script>
 </body>
 </html>

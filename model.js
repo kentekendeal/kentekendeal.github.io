@@ -34,6 +34,9 @@ const carName = (car) => {
   const brand = car.merk || "";
   let model = (car.handelsbenaming || "").trim();
   if (brand && model.toUpperCase().startsWith(brand + " ")) model = model.slice(brand.length + 1);
+  // "COROLLA" → "Corolla", but keep codes like "XC60", "ID.3", "A1" in capitals.
+  if (model === model.toUpperCase())
+    model = model.split(" ").map(w => /\d/.test(w) || w.length <= 2 ? w : cap(w)).join(" ");
   return `${cap(brand)} ${model}`.trim();
 };
 
@@ -54,15 +57,24 @@ async function lookup(plate) {
 function facts(car, fuel) {
   const f = fuel[0] || {};
   const types = fuel.map(x => (x.brandstof_omschrijving || "").toLowerCase());
+  const elec = fuel.find(x => /elektriciteit/i.test(x.brandstof_omschrijving)) || null;
   const isEV = types.length === 1 && types[0] === "elektriciteit";
-  const isPHEV = types.includes("elektriciteit") && types.length > 1;
+  const isHybrid = !isEV && !!elec;
+  // RDW: OVC-HEV = plug-in hybrid, NOVC-HEV = normal (self-charging) hybrid.
+  const hybridClass = fuel.map(x => x.klasse_hybride_elektrisch_voertuig).find(Boolean) || "";
+  const isPHEV = isHybrid && (hybridClass ? hybridClass === "OVC-HEV" : !!elec.actie_radius_enkel_elektrisch_wltp);
   const main = (fuel.find(x => !/elektriciteit/i.test(x.brandstof_omschrijving)) || f);
   const fuelType = isEV ? "elektriciteit" : (main.brandstof_omschrijving || "").toLowerCase();
   const first = parseDate(car.datum_eerste_toelating);
   const age = first ? (Date.now() - first) / (365.25 * 864e5) : null;
-  const kw = isEV ? (+f.netto_max_vermogen_elektrisch || +f.nominaal_continu_maximumvermogen || null)
-                  : (+main.nettomaximumvermogen || null);
-  return { f, main, fuelType, isEV, isPHEV, first, age, kw: kw ? Math.round(kw) : null };
+  const kwElec = elec ? (+elec.netto_max_vermogen_elektrisch || +elec.nominaal_continu_maximumvermogen || null) : null;
+  const kw = isEV ? kwElec : (+main.nettomaximumvermogen || null);
+  const fuelLabel = isEV ? "Elektrisch"
+    : isPHEV ? `Plug-in hybride (${cap(fuelType)})`
+    : isHybrid ? `Hybride (${cap(fuelType)})`
+    : cap(fuelType) || "–";
+  return { f, main, elec, fuelType, fuelLabel, isEV, isHybrid, isPHEV, first, age,
+           kw: kw ? Math.round(kw) : null, kwElec: isHybrid && kwElec ? Math.round(kwElec) : null };
 }
 
 // ---------- value estimate ----------
