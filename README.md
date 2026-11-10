@@ -3,7 +3,7 @@
 **Is this car worth the price?** Enter a Dutch licence plate and see the RDW vehicle data, an estimated value,
 whether the asking price is a good deal, and what the car costs per month.
 
-Live: https://kentekendeal.github.io (custom domain `kentekendeal.nl` planned)
+Live: https://kentekendeal.nl (also reachable via https://kentekendeal.github.io, which redirects)
 
 Static site, no server, no build step for the app. Vehicle data comes live from
 [RDW Open Data](https://opendata.rdw.nl) in the visitor's browser.

@@ -22,7 +22,7 @@ from collections import Counter, defaultdict
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
-SITE = "https://kentekendeal.github.io"   # change when the custom domain goes live
+SITE = "https://kentekendeal.nl"
 API = "https://opendata.rdw.nl/resource/"
 TODAY = dt.date.today()
 NOW_YEAR = TODAY.year

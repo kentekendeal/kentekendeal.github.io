@@ -4,4 +4,4 @@ Disallow: /?k=
 Disallow: /calibrate.html
 Disallow: /tools/
 
-Sitemap: https://kentekendeal.github.io/sitemap.xml
+Sitemap: https://kentekendeal.nl/sitemap.xml
