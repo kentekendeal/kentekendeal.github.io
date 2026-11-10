@@ -43,6 +43,9 @@ const I18N = {
     costsTitle: "Kosten per maand", perMonth: "per maand", kmYearLabel: "Jouw km per jaar",
     costTax: "Wegenbelasting", costTaxSub: "schatting gemiddelde provincie", costPower: "Stroom", costFuel: "Brandstof",
     costDep: "Waardeverlies", costDepSub: "wat de auto per maand minder waard wordt",
+    provLabel: "Provincie", provAvg: "Gemiddeld", insLabel: "Verzekering € p/m", insPh: "bijv. 65",
+    costIns: "Verzekering", costInsSub: "jouw eigen premie", costTaxProv: "{prov}, {opc} opcenten",
+    costsNoteIns: "Exclusief onderhoud. Brandstof: benzine € {b}, diesel € {d}, stroom € {e}/kWh.",
     costsNote: "Exclusief verzekering en onderhoud. Brandstof: benzine € {b}, diesel € {d}, stroom € {e}/kWh.",
     noCosts: "Voor dit voertuig kunnen we geen kosten berekenen.",
     // APK history
@@ -115,6 +118,9 @@ const I18N = {
     costsTitle: "Costs per month", perMonth: "per month", kmYearLabel: "Your km per year",
     costTax: "Road tax", costTaxSub: "estimate, average province", costPower: "Electricity", costFuel: "Fuel",
     costDep: "Depreciation", costDepSub: "how much value the car loses each month",
+    provLabel: "Province", provAvg: "Average", insLabel: "Insurance € per month", insPh: "e.g. 65",
+    costIns: "Insurance", costInsSub: "your own premium", costTaxProv: "{prov}, {opc} provincial surcharge",
+    costsNoteIns: "Excluding maintenance. Fuel: petrol € {b}, diesel € {d}, electricity € {e}/kWh.",
     costsNote: "Excluding insurance and maintenance. Fuel: petrol € {b}, diesel € {d}, electricity € {e}/kWh.",
     noCosts: "We can't calculate costs for this vehicle.",
     // APK history

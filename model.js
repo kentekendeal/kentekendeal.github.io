@@ -168,7 +168,15 @@ function verdict(asking, v) {
 // ---------- road tax (MRB) estimate, 2026 ----------
 // Calibrated on 2026 amounts for Noord-Brabant (87 opcenten, near the national middle).
 // Petrol: 1000 kg ≈ €93, 1200 ≈ €148, 1500 ≈ €231 per quarter. Diesel: 246 / 334 / 466.
-function roadTaxPerMonth(car, fx) {
+// Provincial surcharge (opcenten) 2026. They are charged on the petrol base rate, so the difference
+// with Noord-Brabant is: base × (opc − 87) / 100, where base = petrol amount NB / 1.87.
+// Sources: ANWB, provincial budgets 2026. Friesland lowered to 92.1 from March 2026.
+const OPCENTEN = { GR: 95.7, FR: 92.1, DR: 92.0, OV: 82.2, FL: 84.7, GE: 98.3, UT: 86.4, NH: 82.1, ZH: 104.4, ZE: 84.4, NB: 87.0, LI: 88.5 };
+const PROVINCES = { GR: "Groningen", FR: "Friesland", DR: "Drenthe", OV: "Overijssel", FL: "Flevoland", GE: "Gelderland",
+  UT: "Utrecht", NH: "Noord-Holland", ZH: "Zuid-Holland", ZE: "Zeeland", NB: "Noord-Brabant", LI: "Limburg" };
+const OPC_BASE = 87.0;
+
+function roadTaxPerMonth(car, fx, prov = "") {
   if (car.voertuigsoort !== "Personenauto") return null;
   if (fx.age != null && fx.age >= 40) return { amount: 0, note: t("taxOldtimer") };
   let kg = +car.massa_ledig_voertuig || (+car.massa_rijklaar - 100);
@@ -176,15 +184,16 @@ function roadTaxPerMonth(car, fx) {
   if (fx.isEV) kg -= 125; // EV weight correction
 
   const above = (kg - 1000) / 100;
-  let quarter;
-  if (fx.fuelType === "diesel") quarter = above >= 0 ? 246 + 44 * above : Math.max(150, 246 + 30 * above);
-  else                          quarter = above >= 0 ? 93 + 27.7 * above : Math.max(40, 93 + 20 * above);
+  const petrol = above >= 0 ? 93 + 27.7 * above : Math.max(40, 93 + 20 * above);
+  let quarter = fx.fuelType === "diesel" ? (above >= 0 ? 246 + 44 * above : Math.max(150, 246 + 30 * above)) : petrol;
 
   let note = "";
   if (fx.fuelType === "lpg") { quarter *= 1.5; note = t("taxLpg"); }
   if (fx.fuelType === "diesel" && /EURO [1-4]\b/i.test(fx.main.uitlaatemissieniveau || "")) { quarter *= 1.15; note = t("taxSoot"); }
+  const opc = OPCENTEN[prov];
+  if (opc) quarter += petrol / (1 + OPC_BASE / 100) * (opc - OPC_BASE) / 100;
   if (fx.isEV) { quarter *= 0.70; note = t("taxEV"); }
-  return { amount: quarter / 3, note };
+  return { amount: Math.max(0, quarter / 3), note };
 }
 
 // ---------- fuel cost ----------
