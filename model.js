@@ -86,9 +86,15 @@ async function apkHistory(plate) {
         texts[d.gebrek_identificatie] = d.gebrek_omschrijving;
     } catch { /* descriptions are optional */ }
   }
+  // Our own texts: English translations, and full Dutch text where the RDW cuts it off at 60 characters.
+  let own = {};
+  try { own = await fetch(`/tools/defects_${LANG === "en" ? "en" : "nl"}.json`).then(r => r.ok ? r.json() : {}); } catch {}
   const list = [...byDate.values()].filter(x => x.date).sort((a, b) => b.date - a.date);
   for (const x of list) {
-    for (const g of x.defects) g.text = texts[g.id] || t("apkUnknownDefect", { id: g.id });
+    for (const g of x.defects) {
+      g.text = own[g.id] || texts[g.id] || t("apkUnknownDefect", { id: g.id });
+      g.dutch = LANG === "en" && !own[g.id];
+    }
     x.defects.sort((a, b) => a.advice - b.advice);
   }
   return list;

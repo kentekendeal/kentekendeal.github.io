@@ -92,13 +92,13 @@ const I18N = {
     heroLead: "Enter a Dutch licence plate and instantly see what the car is worth, whether the asking price is fair and what it costs per month.",
     plateLabel: "Licence plate", tryLabel: "Try:", recentLabel: "Recent:",
     footerNote: "Data: RDW Open Data. Values and costs are estimates, not an official valuation or calculation.",
-    footerModels: "Value per model (Dutch)", footerGuide: "Buying guide (Dutch)", footerChecklist: "Used car checklist (Dutch)",
+    footerModels: "Value per model", footerGuide: "Buying guide", footerChecklist: "Used car checklist",
     howTitle: "How it works",
     step1T: "Enter the licence plate", step1D: "We fetch all vehicle data from the RDW (Dutch vehicle authority).",
     step2T: "Enter the asking price", step2D: "From the ad, plus the mileage.",
     step3T: "See if it's a good deal", step3D: "From bargain to too expensive, plus the monthly costs.",
     popularTitle: "Popular models", allModels: "All models →",
-    guideTitle: "Buying guide (in Dutch)", guideChecklist: "Used car buying checklist", guideImport: "Buying an imported car", guideCosts: "What does a car cost per month?",
+    guideTitle: "Buying guide", guideChecklist: "Used car buying checklist", guideImport: "Buying an imported car", guideCosts: "What does a car cost per month?",
     invalidPlate: "Enter a valid licence plate.",
     notFound: "No vehicle found with licence plate {plate}.",
     notFoundHint: "Check the plate. We can only look up Dutch licence plates.",
@@ -131,7 +131,7 @@ const I18N = {
     apkNone: "No MOT (APK) inspections found since June 2022.",
     apkTooNew: "No MOT (APK) yet: this car is too new. The first APK is after 3 years (diesel, LPG, electric) or 4 years (petrol, hybrid).",
     apkNote: "Source: RDW, inspections from June 2022. Defects were found at the APK and usually repaired straight away. Advisories are not a failure, but worth checking on a test drive.",
-    apkError: "The MOT (APK) history couldn't be loaded right now.", apkUnknownDefect: "Defect code {id}", apkDutch: "Defect descriptions are in Dutch, as published by the RDW.",
+    apkError: "The MOT (APK) history couldn't be loaded right now.", apkUnknownDefect: "Defect code {id}", apkDutch: "Some rare defect descriptions are only available in Dutch, as published by the RDW.",
     apkMore: "Show all {n} inspections",
     specsTitle: "Specifications", gEngine: "Engine & consumption", gSize: "Dimensions & weight", gReg: "Registration",
     sFuel: "Fuel", sPower: "Power", sCc: "Engine size", sCyl: "Cylinders", sUse: "Fuel use (WLTP)", sEUse: "Energy use (WLTP)",
@@ -165,16 +165,32 @@ const RDW_EN = {
   "coupe": "Coupé", "terreinvoertuig": "SUV / off-road", "gesloten opbouw": "Van",
 };
 
-// Language: ?lang=en in the link, else the visitor's last choice, else Dutch.
+// Language comes from the page: "/" and the Dutch pages are Dutch, everything under /en/ is English
+// (<html data-lang="en">). Pages without data-lang (tools) fall back to ?lang= or the last choice.
 let LANG = (() => {
+  const page = document.documentElement.dataset.lang;
+  if (page === "en" || page === "nl") return page;
   try {
     const q = new URLSearchParams(location.search).get("lang");
-    if (q === "en" || q === "nl") { localStorage.setItem("lang", q); return q; }
+    if (q === "en" || q === "nl") return q;
     const saved = localStorage.getItem("lang");
     if (saved === "en" || saved === "nl") return saved;
   } catch {}
   return "nl";
 })();
+
+// Dutch path → English path (and back). Keep in sync with GUIDE_EN in tools/build_pages.py.
+const GUIDE_EN = { "tweedehands-auto-kopen-checklist": "used-car-buying-checklist", "importauto-kopen": "buying-an-imported-car",
+  "kosten-auto-per-maand": "car-costs-per-month" };
+function pathFor(path, lang = LANG) {
+  if (lang !== "en") return path;
+  if (path === "/") return "/en/";
+  let m = path.match(/^\/auto\/(.*)$/);
+  if (m) return "/en/cars/" + m[1];
+  m = path.match(/^\/gids\/([^/]*)\/?$/);
+  if (m) return "/en/guide/" + (m[1] ? (GUIDE_EN[m[1]] || m[1]) + "/" : "");
+  return path;
+}
 
 const LOCALE = () => (LANG === "en" ? "en-GB" : "nl-NL");
 
@@ -191,8 +207,11 @@ function rdwText(v) {
   return RDW_EN[v] || RDW_EN[v.toLowerCase()] || capFirst;
 }
 
+// Switch language = go to the same page in the other language (keeps ?k=&km=&p= so a check survives).
 function setLang(lang) {
-  LANG = lang === "en" ? "en" : "nl";
-  try { localStorage.setItem("lang", LANG); } catch {}
-  document.documentElement.lang = LANG;
+  lang = lang === "en" ? "en" : "nl";
+  try { localStorage.setItem("lang", lang); } catch {}
+  const q = new URLSearchParams(location.search); q.delete("lang");
+  const qs = q.toString() ? "?" + q : "";
+  location.href = (lang === "en" ? "/en/" : "/") + qs;
 }

@@ -2,7 +2,8 @@
 Generate the SEO model pages (/auto/<model>/), the model overview (/auto/) and sitemap.xml
 from RDW Open Data.
 
-Run from anywhere:   python tools/build_pages.py
+Run from anywhere:   python tools/build_pages.py        (or --home to only rebuild /en/index.html)
+Builds every page in Dutch (/auto/) and English (/en/cars/), plus /en/index.html from index.html.
 Re-run every month or so to refresh the numbers. Then commit + push.
 
 The value / road-tax logic mirrors model.js. PARAMS and brand lists are read from model.js
@@ -237,33 +238,74 @@ def classify_fuel(fuel_rows):
     return mix, {k: statistics.median(v) for k, v in use.items() if v}
 
 
-# ---------------------------------------------------------------- html
+# ---------------------------------------------------------------- language
+# Every page is built twice: Dutch (/auto/...) and English (/en/cars/...). T("nl", "en") picks the text.
+LANG = "nl"
+def T(nl, en): return en if LANG == "en" else nl
+
+# Keep in sync with GUIDE_EN in i18n.js.
+GUIDE_EN = {"tweedehands-auto-kopen-checklist": "used-car-buying-checklist", "importauto-kopen": "buying-an-imported-car",
+            "kosten-auto-per-maand": "car-costs-per-month"}
+def p_home(): return T("/", "/en/")
+def p_models(): return T("/auto/", "/en/cars/")
+def p_model(slug): return T(f"/auto/{slug}/", f"/en/cars/{slug}/")
+def p_guides(): return T("/gids/", "/en/guide/")
+def p_guide(nl_slug): return T(f"/gids/{nl_slug}/", f"/en/guide/{GUIDE_EN[nl_slug]}/")
+
 COLOR_NL = {"ZWART": "Zwart", "WIT": "Wit", "GRIJS": "Grijs", "BLAUW": "Blauw", "ROOD": "Rood", "GROEN": "Groen", "GEEL": "Geel",
             "ORANJE": "Oranje", "BRUIN": "Bruin", "BEIGE": "Beige", "PAARS": "Paars", "ROZE": "Roze", "CREME": "Crème"}
+COLOR_EN = {"ZWART": "Black", "WIT": "White", "GRIJS": "Grey", "BLAUW": "Blue", "ROOD": "Red", "GROEN": "Green", "GEEL": "Yellow",
+            "ORANJE": "Orange", "BRUIN": "Brown", "BEIGE": "Beige", "PAARS": "Purple", "ROZE": "Pink", "CREME": "Cream"}
+FUEL_EN = {"Benzine": "Petrol", "Diesel": "Diesel", "Elektrisch": "Electric", "Hybride": "Hybrid", "Plug-in hybride": "Plug-in hybrid",
+           "LPG": "LPG", "Overig": "Other"}
+def fuel_label(k): return FUEL_EN.get(k, k) if LANG == "en" else k
+def colour_label(c): return (COLOR_EN if LANG == "en" else COLOR_NL).get(c) or cap(c or "")
+
+# English texts for RDW defect codes (tools/defects_en.json). Missing codes fall back to the Dutch RDW text.
+_DEFECTS_EN_FILE = ROOT / "tools" / "defects_en.json"
+DEFECTS_EN = json.loads(_DEFECTS_EN_FILE.read_text(encoding="utf-8")) if _DEFECTS_EN_FILE.exists() else {}
+# Some RDW texts are cut off at 60 characters; tools/defects_nl.json has the full Dutch text for those.
+_DEFECTS_NL_FILE = ROOT / "tools" / "defects_nl.json"
+DEFECTS_NL = json.loads(_DEFECTS_NL_FILE.read_text(encoding="utf-8")) if _DEFECTS_NL_FILE.exists() else {}
+USED_CODES = set()   # codes shown on any page, so missing translations can be reported
 
 
-def layout(*, title, description, path, crumbs, h1, lead, body, jsonld=(), check=True):
+def money(n): return ("€" + f"{round(n):,}") if LANG == "en" else ("€ " + f"{round(n):,}".replace(",", "."))
+def count(n): return f"{round(n):,}" if LANG == "en" else f"{round(n):,}".replace(",", ".")
+def dec1(x): return f"{x:.1f}" if LANG == "en" else f"{x:.1f}".replace(".", ",")
+def pct(x): return f"{round(x * 100)}%"
+
+
+# ---------------------------------------------------------------- html
+def layout(*, title, description, path, alt, crumbs, h1, lead, body, jsonld=(), check=True):
+    """alt = {"nl": dutch_path, "en": english_path} for the hreflang links."""
     url = SITE + path
     crumb_html = " › ".join(f'<a href="{esc(u)}">{esc(t)}</a>' if u else esc(t) for t, u in crumbs)
     ld = "".join(f'<script type="application/ld+json">{json.dumps(j, ensure_ascii=False)}</script>\n' for j in jsonld)
-    check_html = """
-      <form class="check" action="/" method="get">
-        <div class="plate"><span class="nl">NL</span><input name="k" placeholder="XX-123-X" maxlength="10" aria-label="Kenteken" autocomplete="off"></div>
+    check_html = f"""
+      <form class="check" action="{p_home()}" method="get">
+        <div class="plate"><span class="nl">NL</span><input name="k" placeholder="XX-123-X" maxlength="10" aria-label="{T('Kenteken', 'Licence plate')}" autocomplete="off"></div>
         <button>Check</button>
       </form>""" if check else ""
+    other = "en" if LANG == "nl" else "nl"
+    switch = f'<a class="lang" href="{esc(alt[other])}" hreflang="{other}" lang="{other}">{other.upper()}</a>'
     return f"""<!doctype html>
-<html lang="nl">
+<html lang="{LANG}">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>{esc(title)}</title>
 <meta name="description" content="{esc(description)}">
 <link rel="canonical" href="{esc(url)}">
+<link rel="alternate" hreflang="nl" href="{esc(SITE + alt['nl'])}">
+<link rel="alternate" hreflang="en" href="{esc(SITE + alt['en'])}">
+<link rel="alternate" hreflang="x-default" href="{esc(SITE + alt['nl'])}">
 <meta name="theme-color" content="#0E1B3D">
 <link rel="icon" href="/assets/logo-icon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="/assets/apple-touch-icon.png">
 <meta property="og:type" content="article">
 <meta property="og:site_name" content="KentekenDeal">
+<meta property="og:locale" content="{T('nl_NL', 'en_GB')}">
 <meta property="og:title" content="{esc(title)}">
 <meta property="og:description" content="{esc(description)}">
 <meta property="og:image" content="{SITE}/assets/og-image.png">
@@ -276,8 +318,8 @@ def layout(*, title, description, path, crumbs, h1, lead, body, jsonld=(), check
 <header class="top">
   <div class="wrap">
     <div class="bar">
-      <a class="brand" href="/"><img src="/assets/logo-icon.svg" alt="">kenteken<b>deal</b></a>
-      <nav class="nav"><a href="/">Kenteken check</a><a href="/auto/">Auto's</a><a href="/gids/">Koopgids</a></nav>
+      <a class="brand" href="{p_home()}"><img src="/assets/logo-icon.svg" alt="">kenteken<b>deal</b></a>
+      <nav class="nav"><a href="{p_home()}">{T('Kenteken check', 'Plate check')}</a><a href="{p_models()}">{T("Auto's", 'Cars')}</a><a href="{p_guides()}">{T('Koopgids', 'Buying guide')}</a>{switch}</nav>
     </div>
     <div class="intro">
       <div class="crumbs">{crumb_html}</div>
@@ -290,8 +332,9 @@ def layout(*, title, description, path, crumbs, h1, lead, body, jsonld=(), check
 {body}
 </main>
 <footer class="wrap">
-  <nav><a href="/">Kenteken check</a><a href="/auto/">Alle modellen</a><a href="/gids/">Koopgids</a></nav>
-  Data: RDW Open Data, bijgewerkt {TODAY.strftime('%d-%m-%Y')}. Waarden en kosten zijn schattingen, geen taxatie.<br>© KentekenDeal
+  <nav><a href="{p_home()}">{T('Kenteken check', 'Plate check')}</a><a href="{p_models()}">{T('Alle modellen', 'All models')}</a><a href="{p_guides()}">{T('Koopgids', 'Buying guide')}</a>{switch}</nav>
+  {T(f"Data: RDW Open Data, bijgewerkt {TODAY.strftime('%d-%m-%Y')}. Waarden en kosten zijn schattingen, geen taxatie.",
+     f"Data: RDW Open Data (Dutch vehicle authority), updated {TODAY.strftime('%d %b %Y')}. Values and costs are estimates, not a valuation.")}<br>© KentekenDeal
 </footer>
 </body>
 </html>
@@ -312,64 +355,73 @@ def bar_chart(points):
         x = pad_l + i * slot + (slot - bw) / 2
         y = H - pad_b - h
         k = v / 1000
-        val = f"{k:.1f}k".replace(".", ",") if k < 10 else f"{k:.0f}k"
+        val = f"{dec1(k)}k" if k < 10 else f"{k:.0f}k"
         out.append(f'<rect x="{x:.1f}" y="{y:.1f}" width="{bw:.1f}" height="{h:.1f}" rx="4" fill="var(--bar)"/>'
                    f'<text class="val" x="{x + bw / 2:.1f}" y="{y - 5:.1f}" text-anchor="middle">{val}</text>'
                    f'<text x="{x + bw / 2:.1f}" y="{H - 8}" text-anchor="middle">{label}</text>')
-    return (f'<svg class="chart" viewBox="0 0 {W} {H}" role="img" aria-label="Geschatte waarde per bouwjaar">'
+    return (f'<svg class="chart" viewBox="0 0 {W} {H}" role="img" aria-label="{T("Geschatte waarde per bouwjaar", "Estimated value by year")}">'
             + "".join(out) + "</svg>")
 
 
-def pct(x): return f"{round(x * 100)}%"
+def defect_label(code):
+    USED_CODES.add(code)
+    if LANG == "en" and code in DEFECTS_EN: return DEFECTS_EN[code]
+    return DEFECTS_NL.get(code) or defect_texts().get(code) or T(f"Gebrekcode {code}", f"Defect code {code}")
 
 
 def apk_section(full, apk):
     """Returns (html, faq_answer) for the APK block, or ("", None) without enough data."""
     if not apk: return "", None
-    texts, avg = defect_texts(), APK_AVG.get("codes", {})
-    label = lambda c: texts.get(c) or f"Gebrekcode {c}"
+    avg = APK_AVG.get("codes", {})
     top = [(c, s) for c, s in sorted(apk["codes"].items(), key=lambda kv: -kv[1]) if s >= 0.02][:8]
     if len(top) < 3: return "", None
     lift = lambda c: apk["codes"][c] / avg[c] if avg.get(c) else 1
     hot = {c for c, s in apk["codes"].items() if s >= 0.03 and lift(c) >= 1.6}
     peak = top[0][1]
     items = "".join(
-        f'<li><div class="row"><span>{esc(label(c))}'
-        + (' <span class="tag">advies</span>' if ADVICE.match(c) else "")
-        + (f' <span class="tag hot">{lift(c):.1f}× vaker dan gemiddeld</span>'.replace(".", ",") if c in hot else "")
+        f'<li><div class="row"><span>{esc(defect_label(c))}'
+        + (f' <span class="tag">{T("advies", "advisory")}</span>' if ADVICE.match(c) else "")
+        + (f' <span class="tag hot">{dec1(lift(c))}× {T("vaker dan gemiddeld", "more often than average")}</span>' if c in hot else "")
         + f'</span><b>{pct(s)}</b></div><div class="track"><span style="width:{s / peak * 100:.0f}%"></span></div></li>'
         for c, s in top)
     extra = sorted((c for c in hot if c not in dict(top)), key=lambda c: -lift(c))[:3]
-    extra_html = ("<p><b>Ook opvallend vaak bij de " + esc(full) + ":</b> "
-                  + "; ".join(f"{esc(label(c).lower())} ({pct(apk['codes'][c])}, {lift(c):.1f}× het gemiddelde)".replace(".", ",") for c in extra)
+    extra_html = (f"<p><b>{T('Ook opvallend vaak bij de', 'Also unusually common on the')} {esc(full)}:</b> "
+                  + "; ".join(f"{esc(defect_label(c).lower())} ({pct(apk['codes'][c])}, {dec1(lift(c))}× {T('het gemiddelde', 'the average')})" for c in extra)
                   + ".</p>") if extra else ""
     avg_clean, avg_per = APK_AVG.get("clean"), APK_AVG.get("per_inspection")
-    dec = lambda x: f"{x:.1f}".replace(".", ",")
+    avg_note = T(f"Gemiddeld over alle populaire modellen: {pct(avg_clean)} zonder gebreken, {dec1(avg_per)} gebreken per keuring. Oudere modellen scoren vanzelf slechter.",
+                 f"Average across all popular models: {pct(avg_clean)} without defects, {dec1(avg_per)} defects per inspection. Older models naturally score worse.") if avg_clean else ""
+    dutch_note = (" Some defect descriptions are only available in Dutch." if LANG == "en" and any(c not in DEFECTS_EN for c, _ in top) else "")
     html_ = f"""
 <section class="card">
-  <h2>Bekende APK-gebreken van de {esc(full)}</h2>
-  <p>Wat keurmeesters sinds juni 2022 het vaakst vonden bij de {esc(full)}. Percentage = deel van de gekeurde auto's waarbij het minstens één keer is gevonden.</p>
+  <h2>{T(f"Bekende APK-gebreken van de {esc(full)}", f"Common APK (MOT) defects of the {esc(full)}")}</h2>
+  <p>{T(f"Wat keurmeesters sinds juni 2022 het vaakst vonden bij de {esc(full)}. Percentage = deel van de gekeurde auto's waarbij het minstens één keer is gevonden.",
+        f"What inspectors found most often on the {esc(full)} at the Dutch APK (the yearly roadworthiness test, like the MOT) since June 2022. Percentage = share of inspected cars where it was found at least once.")}</p>
   <div class="stats">
-    <div class="stat"><div class="l">Keuringen zonder gebreken</div><div class="v">{pct(apk['clean'])}</div></div>
-    <div class="stat"><div class="l">Gebreken per keuring</div><div class="v">{dec(apk['per_inspection'])}</div></div>
-    <div class="stat"><div class="l">Gekeurde auto's</div><div class="v">{nl_int(apk['cars'])}</div></div>
+    <div class="stat"><div class="l">{T('Keuringen zonder gebreken', 'Inspections without defects')}</div><div class="v">{pct(apk['clean'])}</div></div>
+    <div class="stat"><div class="l">{T('Gebreken per keuring', 'Defects per inspection')}</div><div class="v">{dec1(apk['per_inspection'])}</div></div>
+    <div class="stat"><div class="l">{T("Gekeurde auto's", 'Inspected cars')}</div><div class="v">{count(apk['cars'])}</div></div>
   </div>
-  {f'<p class="note" style="margin-top:8px">Gemiddeld over alle populaire modellen: {pct(avg_clean)} zonder gebreken, {dec(avg_per)} gebreken per keuring. Oudere modellen scoren vanzelf slechter.</p>' if avg_clean else ''}
+  {f'<p class="note" style="margin-top:8px">{avg_note}</p>' if avg_note else ''}
   <ul class="defects">{items}</ul>
   {extra_html}
-  <p class="note">Bron: RDW (APK-meldingen vanaf juni 2022), steekproef van {nl_int(apk['cars'])} auto's met bouwjaar {FROM_YEAR}–{NOW_YEAR - 4}, {nl_int(apk['inspections'])} keuringen.
-  Gevonden gebreken worden meestal direct gerepareerd. "Advies" is geen afkeur. Wil je de APK-geschiedenis van één auto zien? Vul hieronder het kenteken in.</p>
+  <p class="note">{T(f"Bron: RDW (APK-meldingen vanaf juni 2022), steekproef van {count(apk['cars'])} auto's met bouwjaar {FROM_YEAR}–{NOW_YEAR - 4}, {count(apk['inspections'])} keuringen. Gevonden gebreken worden meestal direct gerepareerd. 'Advies' is geen afkeur. Wil je de APK-geschiedenis van één auto zien? Vul hieronder het kenteken in.",
+                     f"Source: RDW (APK reports from June 2022), sample of {count(apk['cars'])} cars built {FROM_YEAR}–{NOW_YEAR - 4}, {count(apk['inspections'])} inspections. Defects found are usually repaired straight away. An 'advisory' is not a failure. Want the APK history of one specific car? Enter the licence plate below.")}{dutch_note}</p>
 </section>
 """
-    names = [label(c).lower() for c, _ in top[:3]]
-    faq = (f"Bij de APK van de {full} vonden keurmeesters het vaakst: {names[0]} ({pct(top[0][1])} van de auto's), {names[1]} ({pct(top[1][1])}) "
-           f"en {names[2]} ({pct(top[2][1])}). {pct(apk['clean'])} van de keuringen was zonder gebreken"
-           + (f" (gemiddeld over alle populaire modellen: {pct(avg_clean)})." if avg_clean else ".")
-           + f" Gebaseerd op {nl_int(apk['inspections'])} keuringen sinds juni 2022 (RDW).")
+    names = [defect_label(c).lower() for c, _ in top[:3]]
+    faq = T(f"Bij de APK van de {full} vonden keurmeesters het vaakst: {names[0]} ({pct(top[0][1])} van de auto's), {names[1]} ({pct(top[1][1])}) "
+            f"en {names[2]} ({pct(top[2][1])}). {pct(apk['clean'])} van de keuringen was zonder gebreken"
+            + (f" (gemiddeld over alle populaire modellen: {pct(avg_clean)})." if avg_clean else ".")
+            + f" Gebaseerd op {count(apk['inspections'])} keuringen sinds juni 2022 (RDW).",
+            f"At the APK inspection of the {full}, inspectors most often found: {names[0]} ({pct(top[0][1])} of cars), {names[1]} ({pct(top[1][1])}) "
+            f"and {names[2]} ({pct(top[2][1])}). {pct(apk['clean'])} of inspections had no defects"
+            + (f" (average across all popular models: {pct(avg_clean)})." if avg_clean else ".")
+            + f" Based on {count(apk['inspections'])} inspections since June 2022 (RDW).")
     return html_, faq
 
 
-def build_model_page(m, others):
+def build_model_page(m, others, write=True):
     brand, name, years, colours, mix, use = m["brand"], m["name"], m["years"], m["colours"], m["mix"], m["use"]
     full = f"{brand_name(brand)} {model_name(name)}"
     main_fuel = mix[0][0] if mix else "Benzine"
@@ -391,132 +443,149 @@ def build_model_page(m, others):
     valued = [r for r in rows if r["mid"]]
     if len(valued) < 3:
         return None
+    if not write:
+        return True
 
     # example: a ~5 year old car (or the closest year we have)
     ex = min(valued, key=lambda r: abs(r["y"] - (NOW_YEAR - 5)))
     km_year = 12000
     tax = road_tax_month(ex["kg"], "Benzine" if main_fuel in ("Hybride", "Plug-in hybride") else main_fuel)
     u = use.get(main_fuel)
-    if main_fuel == "Elektrisch":
+    is_ev = main_fuel == "Elektrisch"
+    if is_ev:
         fuel_cost = km_year / 12 * (u or 170) / 1000 * FUEL_PRICE["elektriciteit"]; fuel_use = f"{round((u or 170) / 10)} kWh/100 km"
     else:
         lit = max(u or 6.0, 4.5) if main_fuel == "Plug-in hybride" else (u or 6.0)
         price = FUEL_PRICE["diesel"] if main_fuel == "Diesel" else FUEL_PRICE["lpg"] if main_fuel == "LPG" else FUEL_PRICE["benzine"]
-        fuel_cost = km_year / 12 * lit / 100 * price; fuel_use = f"{lit:.1f} l/100 km".replace(".", ",")
+        fuel_cost = km_year / 12 * lit / 100 * price; fuel_use = f"{dec1(lit)} l/100 km"
     dep = max(0, (ex["mid"] - ex["next"]) / 12)
     month_total = (tax or 0) + fuel_cost + dep
 
     newest = max(valued, key=lambda r: r["y"])
-    fuel_txt = ", ".join(f"{k.lower()} ({round(s * 100)}%)" for k, s in mix[:3]) if mix else "onbekend"
-    colour_txt = ", ".join(f"{COLOR_NL.get(c.get('eerste_kleur'), cap(c.get('eerste_kleur') or ''))}" for c in colours[:3]
+    fuel_txt = ", ".join(f"{fuel_label(k).lower()} ({round(s * 100)}%)" for k, s in mix[:3]) if mix else T("onbekend", "unknown")
+    colour_txt = ", ".join(colour_label(c.get("eerste_kleur")) for c in colours[:3]
                            if c.get("eerste_kleur") and "niet" not in c["eerste_kleur"].lower())
 
-    slug = slugify(f"{brand_name(brand)} {name}")
-    path = f"/auto/{slug}/"
+    slug = m["slug"]
+    path = p_model(slug)
+    alt = {"nl": f"/auto/{slug}/", "en": f"/en/cars/{slug}/"}
+    range_txt = lambda r: f"{money(round250(r['mid'] * 0.85))} – {money(round250(r['mid'] * 1.15))}"
     table_rows = "".join(
-        f"<tr><td>{r['y']}</td><td>{nl_int(r['n'])}</td><td>{euro(r['p']) if r['p'] else '–'}</td>"
-        f"<td>{(euro(round250(r['mid'] * 0.85)) + ' – ' + euro(round250(r['mid'] * 1.15))) if r['mid'] else '–'}</td>"
+        f"<tr><td>{r['y']}</td><td>{count(r['n'])}</td><td>{money(r['p']) if r['p'] else '–'}</td>"
+        f"<td>{range_txt(r) if r['mid'] else '–'}</td>"
         f"<td>{(str(round(r['mid'] / r['p'] * 100)) + '%') if r['mid'] and r['p'] else '–'}</td></tr>"
         for r in sorted(rows, key=lambda r: -r["y"]))
     chart = bar_chart([(str(r["y"])[2:] if len(valued) > 10 else str(r["y"]), r["mid"]) for r in valued])
+    energy = T("stroom", "electricity") if is_ev else T("brandstof", "fuel")
 
     faq = [
-        (f"Wat is een {full} uit {ex['y']} waard?",
-         f"Een {full} uit {ex['y']} is volgens onze schatting ongeveer {euro(round250(ex['mid'] * 0.85))} tot {euro(round250(ex['mid'] * 1.15))} waard, "
-         f"bij een gemiddelde kilometerstand en normale staat. De gemiddelde nieuwprijs van dat bouwjaar was {euro(ex['p'])}."),
-        (f"Wat kost een {full} per maand?",
-         f"Voor een {full} uit {ex['y']} rekenen we met ongeveer {euro(month_total)} per maand bij {nl_int(km_year)} km per jaar: "
-         f"wegenbelasting {euro(tax or 0)}, {'stroom' if main_fuel == 'Elektrisch' else 'brandstof'} {euro(fuel_cost)} en waardeverlies {euro(dep)}. "
-         f"Verzekering en onderhoud komen daar nog bij."),
-        (f"Hoeveel auto's van het type {full} rijden er in Nederland?",
-         f"In het RDW-register staan {nl_int(total)} auto's van het type {full} met bouwjaar {FROM_YEAR} of later."),
-        (f"Welke brandstof heeft een {full}?",
-         f"Bij recente bouwjaren zien we vooral: {fuel_txt}. Dit is gebaseerd op een steekproef uit het RDW-register."),
+        (T(f"Wat is een {full} uit {ex['y']} waard?", f"What is a {ex['y']} {full} worth?"),
+         T(f"Een {full} uit {ex['y']} is volgens onze schatting ongeveer {range_txt(ex)} waard, "
+           f"bij een gemiddelde kilometerstand en normale staat. De gemiddelde nieuwprijs van dat bouwjaar was {money(ex['p'])}.",
+           f"We estimate a {ex['y']} {full} in the Netherlands at about {range_txt(ex)}, "
+           f"with average mileage and in normal condition. The average new price for that year was {money(ex['p'])}.")),
+        (T(f"Wat kost een {full} per maand?", f"How much does a {full} cost per month?"),
+         T(f"Voor een {full} uit {ex['y']} rekenen we met ongeveer {money(month_total)} per maand bij {count(km_year)} km per jaar: "
+           f"wegenbelasting {money(tax or 0)}, {energy} {money(fuel_cost)} en waardeverlies {money(dep)}. Verzekering en onderhoud komen daar nog bij.",
+           f"For a {ex['y']} {full} we calculate about {money(month_total)} per month at {count(km_year)} km per year: "
+           f"Dutch road tax {money(tax or 0)}, {energy} {money(fuel_cost)} and depreciation {money(dep)}. Insurance and maintenance come on top.")),
+        (T(f"Hoeveel auto's van het type {full} rijden er in Nederland?", f"How many {full} cars are there in the Netherlands?"),
+         T(f"In het RDW-register staan {count(total)} auto's van het type {full} met bouwjaar {FROM_YEAR} of later.",
+           f"The RDW register lists {count(total)} {full} cars built in {FROM_YEAR} or later.")),
+        (T(f"Welke brandstof heeft een {full}?", f"What fuel does a {full} use?"),
+         T(f"Bij recente bouwjaren zien we vooral: {fuel_txt}. Dit is gebaseerd op een steekproef uit het RDW-register.",
+           f"For recent years we mostly see: {fuel_txt}. This is based on a sample from the RDW register.")),
     ]
     apk_html, apk_faq = apk_section(full, m.get("apk"))
-    if apk_faq: faq.insert(2, (f"Wat zijn veelvoorkomende APK-gebreken van de {full}?", apk_faq))
+    if apk_faq: faq.insert(2, (T(f"Wat zijn veelvoorkomende APK-gebreken van de {full}?", f"What are common APK (MOT) defects of the {full}?"), apk_faq))
     faq_html = "".join(f'<details class="faq"{" open" if i == 0 else ""}><summary>{esc(q)}</summary><p>{esc(a)}</p></details>' for i, (q, a) in enumerate(faq))
 
     same_brand = [o for o in others if o["brand"] == brand and o is not m][:6]
     popular = [o for o in others if o["brand"] != brand][:8]
-    link = lambda o: f'<a class="pill" href="/auto/{o["slug"]}/">{esc(brand_name(o["brand"]) + " " + model_name(o["name"]))}</a>'
+    link = lambda o: f'<a class="pill" href="{p_model(o["slug"])}">{esc(brand_name(o["brand"]) + " " + model_name(o["name"]))}</a>'
 
     body = f"""
 <section class="card">
   <div class="stats">
-    <div class="stat"><div class="l">In Nederland</div><div class="v">{nl_int(total)}</div></div>
-    <div class="stat"><div class="l">Nieuwprijs {newest['y']}</div><div class="v">{euro(newest['p'])}</div></div>
-    <div class="stat"><div class="l">Meest gekozen</div><div class="v">{esc(main_fuel)}</div></div>
+    <div class="stat"><div class="l">{T('In Nederland', 'In the Netherlands')}</div><div class="v">{count(total)}</div></div>
+    <div class="stat"><div class="l">{T('Nieuwprijs', 'New price')} {newest['y']}</div><div class="v">{money(newest['p'])}</div></div>
+    <div class="stat"><div class="l">{T('Meest gekozen', 'Most common')}</div><div class="v">{esc(fuel_label(main_fuel))}</div></div>
   </div>
-  <p class="note" style="margin-top:12px">Aantal met bouwjaar {FROM_YEAR} of later volgens het RDW-register. Nieuwprijs is het gemiddelde van alle uitvoeringen.</p>
+  <p class="note" style="margin-top:12px">{T(f"Aantal met bouwjaar {FROM_YEAR} of later volgens het RDW-register. Nieuwprijs is het gemiddelde van alle uitvoeringen.",
+                                             f"Number built in {FROM_YEAR} or later according to the RDW register. New price is the average of all versions.")}</p>
 </section>
 
 <section class="card">
-  <h2>Wat is een {esc(full)} waard?</h2>
-  <p>Geschatte waarde per bouwjaar, bij een gemiddelde kilometerstand en normale staat.</p>
+  <h2>{T(f"Wat is een {esc(full)} waard?", f"What is a {esc(full)} worth?")}</h2>
+  <p>{T("Geschatte waarde per bouwjaar, bij een gemiddelde kilometerstand en normale staat.", "Estimated value by year of manufacture, with average mileage and in normal condition.")}</p>
   {chart}
   <div class="table-wrap"><table>
-    <thead><tr><th>Bouwjaar</th><th>Aantal</th><th>Gem. nieuwprijs</th><th>Geschatte waarde</th><th>Behouden</th></tr></thead>
+    <thead><tr><th>{T('Bouwjaar', 'Year')}</th><th>{T('Aantal', 'Number')}</th><th>{T('Gem. nieuwprijs', 'Avg. new price')}</th><th>{T('Geschatte waarde', 'Estimated value')}</th><th>{T('Behouden', 'Retained')}</th></tr></thead>
     <tbody>{table_rows}</tbody>
   </table></div>
-  <p class="note">De waarde van één specifieke auto hangt af van uitvoering, kilometerstand, opties en staat. Vul het kenteken in voor een persoonlijke schatting en deal-check.</p>
+  <p class="note">{T("De waarde van één specifieke auto hangt af van uitvoering, kilometerstand, opties en staat. Vul het kenteken in voor een persoonlijke schatting en deal-check.",
+                     "The value of one specific car depends on version, mileage, options and condition. Enter the licence plate for a personal estimate and deal check.")}</p>
 </section>
 
 <section class="card">
-  <h2>Wat kost een {esc(full)} per maand?</h2>
-  <p>Voorbeeld: een {esc(full)} uit {ex['y']} ({esc(main_fuel.lower())}), {nl_int(km_year)} km per jaar.</p>
+  <h2>{T(f"Wat kost een {esc(full)} per maand?", f"What does a {esc(full)} cost per month?")}</h2>
+  <p>{T(f"Voorbeeld: een {esc(full)} uit {ex['y']} ({esc(fuel_label(main_fuel).lower())}), {count(km_year)} km per jaar.",
+        f"Example: a {ex['y']} {esc(full)} ({esc(fuel_label(main_fuel).lower())}), {count(km_year)} km per year.")}</p>
   <div class="costs">
-    <span>Wegenbelasting (gemiddelde provincie)</span><span>{euro(tax or 0)}</span>
-    <span>{'Stroom' if main_fuel == 'Elektrisch' else 'Brandstof'} ({esc(fuel_use)})</span><span>{euro(fuel_cost)}</span>
-    <span>Waardeverlies</span><span>{euro(dep)}</span>
-    <span class="t">Totaal per maand</span><span class="t">{euro(month_total)}</span>
+    <span>{T('Wegenbelasting (gemiddelde provincie)', 'Road tax (average province)')}</span><span>{money(tax or 0)}</span>
+    <span>{esc(energy.capitalize())} ({esc(fuel_use)})</span><span>{money(fuel_cost)}</span>
+    <span>{T('Waardeverlies', 'Depreciation')}</span><span>{money(dep)}</span>
+    <span class="t">{T('Totaal per maand', 'Total per month')}</span><span class="t">{money(month_total)}</span>
   </div>
-  <p class="note">Exclusief verzekering en onderhoud. Lees ook: <a href="/gids/kosten-auto-per-maand/">wat kost een auto per maand?</a></p>
+  <p class="note">{T('Exclusief verzekering en onderhoud. Lees ook:', 'Excluding insurance and maintenance. Also read:')} <a href="{p_guide('kosten-auto-per-maand')}">{T('wat kost een auto per maand?', 'what does a car cost per month in the Netherlands?')}</a></p>
 </section>
-
 {apk_html}
 <section class="card">
-  <h2>Brandstof en kleuren</h2>
-  <p><b>Brandstof (recente bouwjaren):</b> {esc(fuel_txt)}.</p>
-  <p><b>Populairste kleuren:</b> {esc(colour_txt or 'onbekend')}.</p>
+  <h2>{T('Brandstof en kleuren', 'Fuel and colours')}</h2>
+  <p><b>{T('Brandstof (recente bouwjaren):', 'Fuel (recent years):')}</b> {esc(fuel_txt)}.</p>
+  <p><b>{T('Populairste kleuren:', 'Most popular colours:')}</b> {esc(colour_txt or T('onbekend', 'unknown'))}.</p>
 </section>
 
 <section class="card cta">
-  <h2>Staat er een {esc(full)} te koop?</h2>
-  <p>Vul het kenteken en de vraagprijs in. Je ziet direct of het een goede deal is, wat de auto per maand kost, de APK-geschiedenis en of er een terugroepactie openstaat.</p>
-  <form class="check" action="/" method="get">
-    <div class="plate"><span class="nl">NL</span><input name="k" placeholder="XX-123-X" maxlength="10" aria-label="Kenteken" autocomplete="off"></div>
+  <h2>{T(f"Staat er een {esc(full)} te koop?", f"Looking at a {esc(full)} for sale?")}</h2>
+  <p>{T("Vul het kenteken en de vraagprijs in. Je ziet direct of het een goede deal is, wat de auto per maand kost, de APK-geschiedenis en of er een terugroepactie openstaat.",
+        "Enter the Dutch licence plate and the asking price. You'll instantly see whether it's a good deal, what the car costs per month, its APK history and whether there's an open recall.")}</p>
+  <form class="check" action="{p_home()}" method="get">
+    <div class="plate"><span class="nl">NL</span><input name="k" placeholder="XX-123-X" maxlength="10" aria-label="{T('Kenteken', 'Licence plate')}" autocomplete="off"></div>
     <button>Check</button>
   </form>
 </section>
 
 <section class="card">
-  <h2>Veelgestelde vragen</h2>
+  <h2>{T('Veelgestelde vragen', 'Frequently asked questions')}</h2>
   {faq_html}
 </section>
 
 <section class="card">
-  {('<h2>Meer van ' + esc(brand_name(brand)) + '</h2><div class="pills">' + "".join(link(o) for o in same_brand) + '</div>') if same_brand else ''}
-  <h2 style="margin-top:{'20px' if same_brand else '0'}">Andere populaire modellen</h2>
+  {('<h2>' + T('Meer van ', 'More from ') + esc(brand_name(brand)) + '</h2><div class="pills">' + "".join(link(o) for o in same_brand) + '</div>') if same_brand else ''}
+  <h2 style="margin-top:{'20px' if same_brand else '0'}">{T('Andere populaire modellen', 'Other popular models')}</h2>
   <div class="pills">{"".join(link(o) for o in popular)}</div>
 </section>
 """
     jsonld = [
         {"@context": "https://schema.org", "@type": "BreadcrumbList", "itemListElement": [
-            {"@type": "ListItem", "position": 1, "name": "Home", "item": SITE + "/"},
-            {"@type": "ListItem", "position": 2, "name": "Auto's", "item": SITE + "/auto/"},
+            {"@type": "ListItem", "position": 1, "name": "Home", "item": SITE + p_home()},
+            {"@type": "ListItem", "position": 2, "name": T("Auto's", "Cars"), "item": SITE + p_models()},
             {"@type": "ListItem", "position": 3, "name": full, "item": SITE + path}]},
-        {"@context": "https://schema.org", "@type": "FAQPage", "mainEntity": [
+        {"@context": "https://schema.org", "@type": "FAQPage", "inLanguage": LANG, "mainEntity": [
             {"@type": "Question", "name": q, "acceptedAnswer": {"@type": "Answer", "text": a}} for q, a in faq]},
     ]
     page = layout(
-        title=f"{full}: waarde, kosten per maand en APK-gebreken ({NOW_YEAR}) | KentekenDeal",
-        description=f"Wat is een {full} waard? Geschatte waarde per bouwjaar, kosten per maand en de vaakst gevonden APK-gebreken, op basis van RDW-data. Check ook of een {full} te koop een goede deal is.",
-        path=path, crumbs=[("Home", "/"), ("Auto's", "/auto/"), (full, None)],
-        h1=f"{full}: wat is hij waard en wat kost hij?",
-        lead=f"Geschatte waarde per bouwjaar en kosten per maand van de {esc(full)}, op basis van RDW-data. Heb je een kenteken? Check direct of de vraagprijs eerlijk is.",
+        title=T(f"{full}: waarde, kosten per maand en APK-gebreken ({NOW_YEAR}) | KentekenDeal",
+                f"{full} in the Netherlands: value, monthly costs and MOT (APK) defects ({NOW_YEAR}) | KentekenDeal"),
+        description=T(f"Wat is een {full} waard? Geschatte waarde per bouwjaar, kosten per maand en de vaakst gevonden APK-gebreken, op basis van RDW-data. Check ook of een {full} te koop een goede deal is.",
+                      f"What is a used {full} worth in the Netherlands? Estimated value by year, monthly costs incl. Dutch road tax, and the most common APK (MOT) defects, based on RDW data."),
+        path=path, alt=alt, crumbs=[("Home", p_home()), (T("Auto's", "Cars"), p_models()), (full, None)],
+        h1=T(f"{full}: wat is hij waard en wat kost hij?", f"{full}: what is it worth and what does it cost?"),
+        lead=T(f"Geschatte waarde per bouwjaar en kosten per maand van de {esc(full)}, op basis van RDW-data. Heb je een kenteken? Check direct of de vraagprijs eerlijk is.",
+               f"Estimated value by year and monthly costs of a {esc(full)} in the Netherlands, based on official RDW data. Have a Dutch licence plate? Check right away whether the asking price is fair."),
         body=body, jsonld=jsonld)
-    out = ROOT / "auto" / slug / "index.html"
+    out = ROOT / path.strip("/") / "index.html"
     out.parent.mkdir(parents=True, exist_ok=True)
     out.write_text(page, encoding="utf-8")
     return path
@@ -527,28 +596,75 @@ def build_overview(models):
     for m in models: by_brand[m["brand"]].append(m)
     blocks = "".join(
         f'<div class="brand-block"><h3>{esc(brand_name(b))}</h3><div class="pills">'
-        + "".join(f'<a class="pill" href="/auto/{m["slug"]}/">{esc(model_name(m["name"]))}</a>' for m in ms) + "</div></div>"
+        + "".join(f'<a class="pill" href="{p_model(m["slug"])}">{esc(model_name(m["name"]))}</a>' for m in ms) + "</div></div>"
         for b, ms in sorted(by_brand.items(), key=lambda kv: brand_name(kv[0])))
-    body = f'<section class="card"><h2>Populaire modellen in Nederland</h2><p>Kies een model voor de geschatte waarde per bouwjaar en de kosten per maand.</p>{blocks}</section>'
-    page = layout(title="Auto's: waarde en kosten per model | KentekenDeal",
-                  description="Wat is jouw auto waard en wat kost hij per maand? Overzicht van de populairste automodellen in Nederland, op basis van RDW-data.",
-                  path="/auto/", crumbs=[("Home", "/"), ("Auto's", None)],
-                  h1="Waarde en kosten per automodel", lead="De populairste modellen in Nederland: geschatte waarde per bouwjaar en wat ze per maand kosten.",
+    body = (f'<section class="card"><h2>{T("Populaire modellen in Nederland", "Popular models in the Netherlands")}</h2>'
+            f'<p>{T("Kies een model voor de geschatte waarde per bouwjaar, de kosten per maand en de bekende APK-gebreken.", "Pick a model for its estimated value by year, monthly costs and common APK (MOT) defects.")}</p>{blocks}</section>')
+    page = layout(title=T("Auto's: waarde en kosten per model | KentekenDeal", "Used car values and costs per model in the Netherlands | KentekenDeal"),
+                  description=T("Wat is jouw auto waard en wat kost hij per maand? Overzicht van de populairste automodellen in Nederland, op basis van RDW-data.",
+                                "What is a used car worth in the Netherlands and what does it cost per month? The most popular models, based on official RDW data."),
+                  path=p_models(), alt={"nl": "/auto/", "en": "/en/cars/"}, crumbs=[("Home", p_home()), (T("Auto's", "Cars"), None)],
+                  h1=T("Waarde en kosten per automodel", "Value and costs per car model"),
+                  lead=T("De populairste modellen in Nederland: geschatte waarde per bouwjaar en wat ze per maand kosten.",
+                         "The most popular models in the Netherlands: estimated value by year and what they cost per month."),
                   body=body)
-    (ROOT / "auto" / "index.html").write_text(page, encoding="utf-8")
+    out = ROOT / p_models().strip("/") / "index.html"
+    out.parent.mkdir(parents=True, exist_ok=True)
+    out.write_text(page, encoding="utf-8")
 
 
-def build_sitemap(paths):
-    guides = sorted("/" + p.parent.relative_to(ROOT).as_posix() + "/" for p in (ROOT / "gids").glob("*/index.html"))
-    all_paths = ["/", "/auto/", "/gids/"] + guides + paths
-    items = "".join(f"<url><loc>{SITE}{p}</loc><lastmod>{TODAY.isoformat()}</lastmod></url>\n" for p in all_paths)
+def build_en_home():
+    """/en/index.html = the app (index.html) with English head + static text, so search engines see an English page."""
+    global LANG
+    LANG = "en"
+    src = (ROOT / "index.html").read_text(encoding="utf-8")
+    js = (ROOT / "i18n.js").read_text(encoding="utf-8")
+    en_block = re.search(r"\n  en: \{(.*?)\n  \},", js, re.S).group(1)
+    EN = {k: json.loads('"' + v + '"') for k, v in re.findall(r'(\w+): "((?:[^"\\]|\\.)*)"', en_block)}
+    desc = "Enter a Dutch licence plate: specs, what the car is worth, whether the asking price is fair, monthly costs and the APK (MOT) history. Free, based on RDW data."
+    reps = [
+        ('<html lang="nl" data-lang="nl">', '<html lang="en" data-lang="en">'),
+        ("<title>KentekenDeal: is deze auto zijn prijs waard?</title>", f"<title>{esc(EN['docTitle'])}</title>"),
+        ('<meta name="description" content="Vul een kenteken in: specificaties, wat de auto waard is, of de vraagprijs eerlijk is en wat hij per maand kost.">',
+         f'<meta name="description" content="{esc(desc)}">'),
+        ('<meta property="og:title" content="Is deze auto zijn prijs waard?">', f'<meta property="og:title" content="{esc(EN["heroTitle"])}">'),
+        ('<meta property="og:description" content="Vul een kenteken in en zie direct de waarde, of de vraagprijs eerlijk is en wat hij per maand kost.">',
+         f'<meta property="og:description" content="{esc(EN["heroLead"])}">'),
+        ('<meta property="og:url" content="https://kentekendeal.nl/">', f'<meta property="og:url" content="{SITE}/en/">'),
+        ('<link rel="canonical" href="https://kentekendeal.nl/">', f'<link rel="canonical" href="{SITE}/en/">'),
+        ('"url":"https://kentekendeal.nl/","applicationCategory"', f'"url":"{SITE}/en/","applicationCategory"'),
+        ('"inLanguage":["nl","en"],"description":"Vul een kenteken in en zie de RDW-gegevens, de geschatte waarde, of de vraagprijs eerlijk is en wat de auto per maand kost."',
+         f'"inLanguage":"en","description":"{desc}"'),
+        ('aria-label="Kenteken"', 'aria-label="Licence plate"'),
+        ('aria-label="Switch language">EN</button>', 'aria-label="Schakel naar Nederlands">NL</button>'),
+        ('<a class="brand" href="/"', '<a class="brand" href="/en/"'),
+    ]
+    for a, b in reps:
+        if a not in src: raise SystemExit(f"build_en_home: can't find {a[:60]!r} in index.html; update build_en_home().")
+        src = src.replace(a, b)
+    src = re.sub(r'(<[^>]*\bdata-i18n="(\w+)"[^>]*>)([^<]*)(<)', lambda mo: mo.group(1) + esc(EN.get(mo.group(2), mo.group(3))) + mo.group(4), src)
+    src = re.sub(r'href="/auto/', 'href="/en/cars/', src)
+    src = re.sub(r'href="/gids/([^"/]*)/?"', lambda mo: f'href="/en/guide/{(GUIDE_EN.get(mo.group(1), mo.group(1)) + "/") if mo.group(1) else ""}"', src)
+    src = src.replace("<!doctype html>", "<!doctype html>\n<!-- GENERATED from index.html by tools/build_pages.py (build_en_home). Do not edit; edit index.html. -->", 1)
+    (ROOT / "en").mkdir(exist_ok=True)
+    (ROOT / "en" / "index.html").write_text(src, encoding="utf-8")
+    LANG = "nl"
+
+
+def build_sitemap(model_slugs):
+    guides = sorted(p.parent.name for p in (ROOT / "gids").glob("*/index.html"))
+    paths = ["/", "/en/", "/auto/", "/en/cars/", "/gids/", "/en/guide/"]
+    for g in guides:
+        paths.append(f"/gids/{g}/")
+        if g in GUIDE_EN and (ROOT / "en" / "guide" / GUIDE_EN[g] / "index.html").exists(): paths.append(f"/en/guide/{GUIDE_EN[g]}/")
+    for s in model_slugs: paths += [f"/auto/{s}/", f"/en/cars/{s}/"]
+    items = "".join(f"<url><loc>{SITE}{p}</loc><lastmod>{TODAY.isoformat()}</lastmod></url>\n" for p in paths)
     (ROOT / "sitemap.xml").write_text(
         f'<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n{items}</urlset>\n', encoding="utf-8")
-    return len(all_paths)
+    return len(paths)
 
 
-def main():
-    t0 = time.time()
+def fetch_all():
     print("Top models…")
     tops = top_models()
     models = [{"brand": b, "name": n, "variants": v, "count": c, "slug": slugify(f"{brand_name(b)} {n}")} for b, n, v, c in tops]
@@ -567,6 +683,28 @@ def main():
     defect_texts()
     with cf.ThreadPoolExecutor(max_workers=6) as ex:
         list(ex.map(fetch, models))
+    return models
+
+
+def main():
+    """python tools/build_pages.py            full build (~4 min, fetches RDW data)
+       python tools/build_pages.py --home     only rebuild /en/index.html (after editing index.html)
+       KD_CACHE=file.json                     reuse fetched data (handy while editing templates)"""
+    global LANG, _defect_texts
+    import os, sys
+    t0 = time.time()
+    build_en_home()
+    if "--home" in sys.argv:
+        print("Rebuilt en/index.html"); return
+
+    cache = os.environ.get("KD_CACHE")
+    if cache and Path(cache).exists():
+        data = json.loads(Path(cache).read_text(encoding="utf-8"))
+        models, _defect_texts = data["models"], data["texts"]
+        print(f"Using cached data from {cache}")
+    else:
+        models = fetch_all()
+        if cache: Path(cache).write_text(json.dumps({"models": models, "texts": defect_texts()}, ensure_ascii=False), encoding="utf-8")
 
     # Averages over all models, to say whether a defect is typical for a model.
     sampled = [m["apk"] for m in models if m["apk"]]
@@ -576,18 +714,23 @@ def main():
                        per_inspection=statistics.mean(a["per_inspection"] for a in sampled),
                        codes={c: statistics.mean(a["codes"].get(c, 0) for a in sampled) for c in codes})
 
-    # Pass 1 finds which models have enough data; pass 2 builds them, linking only to built pages.
-    built = [m for m in models if build_model_page(m, models)]
+    # Pass 1 finds which models have enough data; pass 2 builds them (both languages), linking only to built pages.
+    built = [m for m in models if build_model_page(m, models, write=False)]
     for m in models:
         if m not in built:
             print(f"  skipped {m['brand']} {m['name']} (not enough data)")
-    paths = []
+    for lang in ("nl", "en"):
+        LANG = lang
+        for m in built: build_model_page(m, built)
+        build_overview(built)
+    LANG = "nl"
     for m in built:
-        paths.append(build_model_page(m, built))
-        print(f"  {paths[-1]}  ({m['count']:,} auto's, {m['mix'][0][0] if m['mix'] else '?'})")
-    build_overview(built)
-    n = build_sitemap(paths)
-    print(f"Done: {len(paths)} model pages, sitemap with {n} URLs, {time.time() - t0:.0f}s")
+        print(f"  /auto/{m['slug']}/ + /en/cars/{m['slug']}/  ({m['count']:,} cars, {m['mix'][0][0] if m['mix'] else '?'})")
+    n = build_sitemap([m["slug"] for m in built])
+    missing = sorted(c for c in USED_CODES if c not in DEFECTS_EN)
+    if missing:
+        print(f"Note: {len(missing)} defect codes have no English text yet (add them to tools/defects_en.json): " + ", ".join(missing))
+    print(f"Done: {len(built)} models × 2 languages, sitemap with {n} URLs, {time.time() - t0:.0f}s")
 
 
 if __name__ == "__main__":

@@ -1,6 +1,7 @@
 User-agent: *
 # Individual plate checks are personal lookups: keep them out of search engines.
 Disallow: /?k=
+Disallow: /en/?k=
 Disallow: /calibrate.html
 Disallow: /tools/
 

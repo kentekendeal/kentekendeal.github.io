@@ -1,0 +1,752 @@
+<!doctype html>
+<!-- GENERATED from index.html by tools/build_pages.py (build_en_home). Do not edit; edit index.html. -->
+<html lang="en" data-lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>KentekenDeal: is this car worth the price?</title>
+<meta name="description" content="Enter a Dutch licence plate: specs, what the car is worth, whether the asking price is fair, monthly costs and the APK (MOT) history. Free, based on RDW data.">
+<meta name="theme-color" content="#0E1B3D">
+<link rel="icon" href="/assets/logo-icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="/assets/apple-touch-icon.png">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="KentekenDeal">
+<meta property="og:title" content="Is this car worth the price?">
+<meta property="og:description" content="Enter a Dutch licence plate and instantly see what the car is worth, whether the asking price is fair and what it costs per month.">
+<meta property="og:image" content="https://kentekendeal.nl/assets/og-image.png">
+<meta property="og:url" content="https://kentekendeal.nl/en/">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="canonical" href="https://kentekendeal.nl/en/">
+<link rel="alternate" hreflang="nl" href="https://kentekendeal.nl/">
+<link rel="alternate" hreflang="en" href="https://kentekendeal.nl/en/">
+<link rel="alternate" hreflang="x-default" href="https://kentekendeal.nl/">
+<script>
+  // Old links with ?lang=en (and returning visitors who chose English) go to the English page.
+  (function () {
+    if (document.documentElement.dataset.lang !== "nl") return;
+    var q = new URLSearchParams(location.search), want = q.get("lang"), saved = null;
+    try { saved = localStorage.getItem("lang"); } catch (e) {}
+    if (want === "en" || (!want && saved === "en")) { q.delete("lang"); var s = q.toString(); location.replace("/en/" + (s ? "?" + s : "")); }
+  })();
+  // A plate check (?k=...) is a personal lookup: don't let search engines index it.
+  if (new URLSearchParams(location.search).has("k")) document.write('<meta name="robots" content="noindex">');
+</script>
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"WebApplication","name":"KentekenDeal","url":"https://kentekendeal.nl/en/","applicationCategory":"UtilitiesApplication","operatingSystem":"Web","inLanguage":"en","description":"Enter a Dutch licence plate: specs, what the car is worth, whether the asking price is fair, monthly costs and the APK (MOT) history. Free, based on RDW data.","offers":{"@type":"Offer","price":"0","priceCurrency":"EUR"},"image":"https://kentekendeal.nl/assets/og-image.png"}</script>
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"Organization","name":"KentekenDeal","url":"https://kentekendeal.nl/","logo":"https://kentekendeal.nl/assets/icon-512.png"}</script>
+<!-- Visitor stats (GoatCounter, no cookies). Count only the path, never the plate in the URL. -->
+<script data-goatcounter="https://kentekendeal.goatcounter.com/count"
+        data-goatcounter-settings='{"no_onload": true}'
+        async src="//gc.zgo.at/count.js"
+        onload="window.goatcounter.count({ path: location.pathname })"></script>
+<style>
+  :root {
+    --navy: #0E1B3D; --navy-2: #1B3D8F; --yellow: #F7C600; --plate-blue: #1B3D8F;
+    --bg: #f3f5f9; --card: #ffffff; --text: #111827; --muted: #6b7280; --line: #e5e7eb; --field: #f9fafb;
+    --accent: #2563eb; --good: #15803d; --good-bg: #dcfce7; --ok: #1d4ed8; --ok-bg: #dbeafe;
+    --warn: #b45309; --warn-bg: #fef3c7; --bad: #b91c1c; --bad-bg: #fee2e2;
+    --shadow: 0 1px 2px rgba(16,24,40,.06), 0 4px 16px rgba(16,24,40,.06);
+    --c-tax: #1B3D8F; --c-fuel: #F59E0B; --c-dep: #EF4444; --c-ins: #8B5CF6;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #0b0f17; --card: #141a24; --text: #e5e7eb; --muted: #9ca3af; --line: #252d3a; --field: #0f141d;
+      --accent: #60a5fa; --good: #4ade80; --good-bg: #052e16; --ok: #93c5fd; --ok-bg: #172554;
+      --warn: #fbbf24; --warn-bg: #3b2705; --bad: #f87171; --bad-bg: #3f0d0d;
+      --shadow: 0 1px 2px rgba(0,0,0,.4);
+      --c-tax: #60a5fa;
+    }
+  }
+  * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
+  body { margin: 0; background: var(--bg); color: var(--text);
+    font: 16px/1.5 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+  .wrap { max-width: 680px; margin: 0 auto; padding: 0 16px; }
+
+  /* ---------- header + hero ---------- */
+  .hero { background: radial-gradient(circle at 90% -10%, #2a4fb0 0%, var(--navy) 55%); color: #fff; padding-bottom: 28px; }
+  .site-header { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 14px 0; }
+  .brand { display: flex; align-items: center; gap: 10px; color: #fff; text-decoration: none;
+    font-size: 1.35rem; letter-spacing: -0.5px; font-weight: 600; }
+  .brand img { width: 36px; height: 36px; }
+  .brand b { color: #4ADE80; font-weight: 800; }
+  .top-nav { display: flex; gap: 14px; font-size: .92rem; align-items: center; }
+  .top-nav a { color: #c7d2fe; text-decoration: none; }
+  .top-nav a:hover { color: #fff; }
+  .lang { border: 1px solid rgba(255,255,255,.35); background: transparent; color: #fff; border-radius: 8px;
+    padding: 3px 9px; font: inherit; font-size: .8rem; font-weight: 700; cursor: pointer; letter-spacing: .5px; }
+  .lang:hover { background: rgba(255,255,255,.12); }
+  @media (max-width: 420px) { .top-nav a { display: none; } }
+  .hero h1 { font-size: clamp(1.7rem, 6vw, 2.4rem); line-height: 1.1; letter-spacing: -1px; margin: 14px 0 8px; }
+  .hero p.lead { color: #c7d2fe; margin: 0 0 20px; }
+
+  #form { display: flex; gap: 8px; }
+  .plate { flex: 1; display: flex; border-radius: 10px; overflow: hidden; border: 3px solid #000;
+    background: var(--yellow); box-shadow: 0 8px 24px rgba(0,0,0,.25); }
+  .plate .nl { background: var(--plate-blue); color: #fff; font-weight: 700; font-size: .8rem;
+    display: flex; align-items: flex-end; justify-content: center; width: 38px; padding-bottom: 8px; flex: none; }
+  .plate input { flex: 1; min-width: 0; border: 0; background: transparent; color: #111;
+    font: 700 clamp(1.5rem, 7vw, 2rem)/1 "Arial Narrow", Arial, sans-serif; letter-spacing: 3px;
+    text-transform: uppercase; padding: 14px 8px; outline: none; text-align: center; }
+  .plate input::placeholder { color: rgba(0,0,0,.35); }
+  .btn { border: 0; border-radius: 10px; background: #16A34A; color: #fff; font-weight: 700; font-size: 1.05rem;
+    padding: 0 22px; cursor: pointer; box-shadow: 0 8px 24px rgba(0,0,0,.25); }
+  .btn:hover { background: #15803d; }
+  .btn:disabled { opacity: .6; cursor: wait; }
+
+  .chips { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 14px; align-items: center; }
+  .chips .label { color: #a5b4fc; font-size: .85rem; margin-right: 2px; }
+  .chip { border: 1px solid rgba(255,255,255,.25); background: rgba(255,255,255,.08); color: #fff;
+    border-radius: 999px; padding: 5px 12px; cursor: pointer; font: inherit; font-size: .85rem; }
+  .chip:hover { background: rgba(255,255,255,.18); }
+
+  /* ---------- content ---------- */
+  main.wrap { padding-top: 20px; padding-bottom: 48px; }
+  .card { background: var(--card); border: 1px solid var(--line); border-radius: 16px; padding: 20px;
+    margin-top: 16px; box-shadow: var(--shadow); }
+  .card:first-child { margin-top: 0; }
+  h2 { font-size: 1.05rem; margin: 0 0 14px; display: flex; align-items: center; gap: 8px; }
+  h2 .ico { width: 20px; height: 20px; color: var(--muted); }
+  .note { color: var(--muted); font-size: .82rem; margin: 10px 0 0; }
+  .msg { color: var(--muted); text-align: center; padding: 24px 0; }
+  .msg.error { color: var(--bad); }
+  .pills { display: flex; flex-wrap: wrap; gap: 8px; }
+  .pill { border: 1px solid var(--line); background: var(--field); border-radius: 999px; padding: 5px 12px; font-size: .88rem; color: var(--text); text-decoration: none; }
+  .pill:hover { border-color: var(--accent); color: var(--accent); }
+
+  /* how it works */
+  .steps { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+  .step { text-align: center; padding: 8px; }
+  .step .n { width: 36px; height: 36px; border-radius: 50%; background: var(--navy); color: #fff; font-weight: 800;
+    display: inline-flex; align-items: center; justify-content: center; margin-bottom: 8px; }
+  .step b { display: block; }
+  .step span { color: var(--muted); font-size: .85rem; }
+  @media (max-width: 520px) { .steps { grid-template-columns: 1fr; } .step { display: grid; grid-template-columns: 44px 1fr; text-align: left; gap: 0 10px; } .step .n { grid-row: span 2; } }
+
+  /* car header */
+  .car-head { display: flex; gap: 16px; align-items: center; }
+  .car-head svg.car { width: 110px; height: 48px; flex: none; }
+  .car-title { font-size: 1.4rem; font-weight: 800; margin: 0; letter-spacing: -0.3px; line-height: 1.2; }
+  .car-sub { color: var(--muted); margin: 2px 0 0; font-size: .92rem; }
+  .tiles { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-top: 16px; }
+  .tile { background: var(--field); border: 1px solid var(--line); border-radius: 12px; padding: 10px; }
+  .tile .l { color: var(--muted); font-size: .72rem; text-transform: uppercase; letter-spacing: .4px; }
+  .tile .v { font-weight: 700; font-size: .98rem; margin-top: 2px; }
+  @media (max-width: 520px) { .tiles { grid-template-columns: repeat(2, 1fr); } .car-head svg.car { width: 84px; height: 37px; } }
+  .badges { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 14px; }
+  .badge { font-size: .8rem; font-weight: 600; padding: 4px 10px; border-radius: 999px; }
+  .badge.good { color: var(--good); background: var(--good-bg); }
+  .badge.warn { color: var(--warn); background: var(--warn-bg); }
+  .badge.ok   { color: var(--ok); background: var(--ok-bg); }
+  .badge.bad  { color: var(--bad);  background: var(--bad-bg); }
+  .actions { display: flex; gap: 8px; margin-top: 14px; }
+  .link-btn { border: 1px solid var(--line); background: var(--card); color: var(--text); border-radius: 10px;
+    padding: 8px 14px; font: inherit; font-size: .9rem; font-weight: 600; cursor: pointer; display: inline-flex; gap: 6px; align-items: center; }
+  .link-btn:hover { border-color: var(--accent); color: var(--accent); }
+
+  /* deal inputs */
+  .inputs { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .inputs label { display: flex; flex-direction: column; gap: 4px; font-size: .85rem; color: var(--muted); font-weight: 600; }
+  .inputs input, .inline-input input { font: inherit; font-size: 1.05rem; color: var(--text); background: var(--field);
+    border: 1px solid var(--line); border-radius: 10px; padding: 11px 12px; width: 100%; }
+  .inputs input:focus, .inline-input input:focus { outline: 2px solid var(--accent); outline-offset: -1px; }
+
+  /* value + meter */
+  .value-range { text-align: center; margin: 18px 0 4px; }
+  .value-range .l { color: var(--muted); font-size: .88rem; }
+  .value-range .v { font-size: clamp(1.7rem, 7vw, 2.2rem); font-weight: 800; letter-spacing: -0.5px; font-variant-numeric: tabular-nums; }
+  .meter { position: relative; margin: 30px 0 8px; }
+  .meter .bar { display: flex; height: 14px; border-radius: 999px; overflow: hidden; }
+  .meter .bar span { height: 100%; }
+  .meter .labels { position: relative; height: 18px; color: var(--muted); font-size: .75rem; margin-top: 6px; }
+  .meter .labels span { position: absolute; transform: translateX(-50%); white-space: nowrap; }
+  .meter .labels span:first-child { transform: none; }
+  .meter .labels span:last-child { transform: translateX(-100%); }
+  .meter .marker { position: absolute; top: -26px; transform: translateX(-50%); transition: left .9s cubic-bezier(.2,.8,.2,1);
+    display: flex; flex-direction: column; align-items: center; pointer-events: none; }
+  .meter .marker .tag { background: var(--text); color: var(--card); font-size: .72rem; font-weight: 700; padding: 2px 8px; border-radius: 6px; white-space: nowrap; }
+  .meter .marker .pin { width: 3px; height: 26px; background: var(--text); border-radius: 2px; }
+  .verdict { margin-top: 18px; border-radius: 14px; padding: 16px; text-align: center; }
+  .verdict .big { font-size: 1.5rem; font-weight: 800; margin: 0; }
+  .verdict p { margin: 4px 0 0; }
+  .verdict.good { background: var(--good-bg); color: var(--good); }
+  .verdict.ok { background: var(--ok-bg); color: var(--ok); }
+  .verdict.warn { background: var(--warn-bg); color: var(--warn); }
+  .verdict.bad { background: var(--bad-bg); color: var(--bad); }
+  .hint { margin-top: 16px; text-align: center; color: var(--muted); font-size: .9rem; background: var(--field);
+    border: 1px dashed var(--line); border-radius: 12px; padding: 12px; }
+
+  /* costs */
+  .cost-total { display: flex; align-items: baseline; gap: 6px; }
+  .cost-total .v { font-size: 2rem; font-weight: 800; letter-spacing: -0.5px; font-variant-numeric: tabular-nums; }
+  .cost-total .l { color: var(--muted); }
+  .stack { display: flex; height: 12px; border-radius: 999px; overflow: hidden; margin: 12px 0 14px; background: var(--field); }
+  .stack span { height: 100%; transition: width .6s ease; }
+  .cost-row { display: flex; align-items: center; gap: 10px; padding: 8px 0; border-bottom: 1px solid var(--line); }
+  .cost-row:last-of-type { border-bottom: 0; }
+  .dot { width: 10px; height: 10px; border-radius: 50%; flex: none; }
+  .cost-row .name { flex: 1; }
+  .cost-row .name small { display: block; color: var(--muted); font-size: .78rem; }
+  .cost-row .amt { font-weight: 700; font-variant-numeric: tabular-nums; }
+  .inline-input { display: flex; align-items: center; gap: 10px; margin-top: 12px; font-size: .88rem; color: var(--muted); }
+  .inline-input input, .inline-input select { width: 120px; padding: 7px 10px; font-size: .95rem; }
+  .cost-opts { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 14px; }
+  .cost-opts label { display: flex; flex-direction: column; gap: 4px; font-size: .8rem; color: var(--muted); font-weight: 600; }
+  .cost-opts input, .cost-opts select { font: inherit; font-size: .95rem; color: var(--text); background: var(--field);
+    border: 1px solid var(--line); border-radius: 10px; padding: 8px 10px; width: 100%; min-width: 0; }
+  .cost-opts input:focus, .cost-opts select:focus { outline: 2px solid var(--accent); outline-offset: -1px; }
+  @media (max-width: 520px) { .cost-opts { grid-template-columns: 1fr 1fr; } }
+
+  /* compare with listings */
+  .compare { margin-top: 16px; padding-top: 14px; border-top: 1px solid var(--line); }
+  .compare p { margin: 0 0 8px; font-size: .88rem; color: var(--muted); }
+  .compare .row { display: flex; flex-wrap: wrap; gap: 8px; }
+  .compare a { text-decoration: none; }
+
+  /* APK history */
+  .apk-stats { grid-template-columns: repeat(3, 1fr); margin-top: 0; }
+  .apk-list { list-style: none; margin: 16px 0 0; padding: 0; }
+  .apk-item { position: relative; padding: 0 0 16px 26px; }
+  .apk-item::before { content: ""; position: absolute; left: 6px; top: 16px; bottom: 0; width: 2px; background: var(--line); }
+  .apk-item:last-child::before { display: none; }
+  .apk-item .dot { position: absolute; left: 0; top: 4px; width: 14px; height: 14px; border: 3px solid var(--card); box-sizing: content-box; margin: -3px; }
+  .apk-head { display: flex; justify-content: space-between; align-items: center; gap: 8px; flex-wrap: wrap; }
+  .apk-head b { font-variant-numeric: tabular-nums; }
+  .apk-item ul { margin: 6px 0 0; padding: 0; list-style: none; }
+  .apk-item li { font-size: .9rem; padding: 3px 0; display: flex; gap: 8px; align-items: baseline; }
+  .apk-item li .x { color: var(--muted); font-size: .8rem; white-space: nowrap; }
+  .apk-item li .tag { font-size: .7rem; font-weight: 700; text-transform: uppercase; letter-spacing: .3px; color: var(--muted);
+    border: 1px solid var(--line); border-radius: 6px; padding: 0 6px; white-space: nowrap; }
+  .apk-item.hidden { display: none; }
+
+  /* specs */
+  details { border-top: 1px solid var(--line); }
+  details:first-of-type { border-top: 0; }
+  summary { cursor: pointer; padding: 12px 0; font-weight: 700; list-style: none; display: flex; justify-content: space-between; }
+  summary::-webkit-details-marker { display: none; }
+  summary::after { content: "+"; color: var(--muted); font-weight: 400; font-size: 1.2rem; line-height: 1; }
+  details[open] summary::after { content: "−"; }
+  dl { display: grid; grid-template-columns: 1fr auto; margin: 0 0 12px; }
+  dt, dd { padding: 7px 0; border-bottom: 1px solid var(--line); margin: 0; font-size: .93rem; }
+  dt { color: var(--muted); }
+  dd { text-align: right; font-weight: 600; font-variant-numeric: tabular-nums; }
+  dl > :nth-last-child(-n+2) { border-bottom: 0; }
+
+  /* skeleton */
+  .skel { background: linear-gradient(90deg, var(--field) 25%, var(--line) 50%, var(--field) 75%); background-size: 200% 100%;
+    animation: sh 1.2s infinite; border-radius: 10px; }
+  @keyframes sh { to { background-position: -200% 0; } }
+
+  footer { color: var(--muted); font-size: .8rem; text-align: center; padding: 8px 0 32px; }
+  footer a { color: inherit; }
+  footer nav { display: flex; gap: 16px; justify-content: center; flex-wrap: wrap; margin-bottom: 8px; }
+  @media (prefers-reduced-motion: reduce) { .meter .marker, .stack span { transition: none; } .skel { animation: none; } }
+</style>
+</head>
+<body>
+<section class="hero">
+  <div class="wrap">
+    <header class="site-header">
+      <a class="brand" href="/en/" aria-label="KentekenDeal home"><img src="/assets/logo-icon.svg" alt="">kenteken<b>deal</b></a>
+      <nav class="top-nav">
+        <a href="/en/cars/" data-i18n="navCars">Car models</a><a href="/en/guide/" data-i18n="navGuide">Buying guide</a>
+        <button type="button" class="lang" id="lang" aria-label="Schakel naar Nederlands">NL</button>
+      </nav>
+    </header>
+    <h1 data-i18n="heroTitle">Is this car worth the price?</h1>
+    <p class="lead" data-i18n="heroLead">Enter a Dutch licence plate and instantly see what the car is worth, whether the asking price is fair and what it costs per month.</p>
+    <form id="form" autocomplete="off">
+      <div class="plate"><span class="nl">NL</span>
+        <input id="plate" placeholder="XX-123-X" maxlength="10" aria-label="Licence plate" enterkeyhint="search">
+      </div>
+      <button class="btn" id="go">Check</button>
+    </form>
+    <div class="chips" id="chips"></div>
+  </div>
+</section>
+
+<main class="wrap">
+  <div id="out"></div>
+</main>
+
+<footer class="wrap">
+  <nav><a href="/en/cars/" data-i18n="footerModels">Value per model</a><a href="/en/guide/" data-i18n="footerGuide">Buying guide</a>
+    <a href="/en/guide/used-car-buying-checklist/" data-i18n="footerChecklist">Used car checklist</a></nav>
+  <span data-i18n="footerNote">Data: RDW Open Data. Values and costs are estimates, not an official valuation or calculation.</span><br>
+  © KentekenDeal
+</footer>
+
+<script src="/i18n.js"></script>
+<script src="/model.js"></script>
+<script>
+const $ = (id) => document.getElementById(id);
+let state = null;          // { car, fuel }
+let dealTracked = false;
+let lastMarker = 50;       // meter marker position (%), so it animates from where it was
+
+// Example ads (dealer listings) to try the deal check in one tap.
+const EXAMPLES = [
+  { k: "KLJ73X", km: 11250, p: 34000, label: "Nissan Qashqai" },
+  { k: "T780VD", km: 48032, p: 31250, label: "Skoda Karoq" },
+  { k: "KTL87L", km: 75545, p: 21500, label: "Lynk & Co 01" },
+];
+const POPULAR = [["volkswagen-polo","Volkswagen Polo"],["volkswagen-golf","Volkswagen Golf"],["kia-picanto","Kia Picanto"],["toyota-yaris","Toyota Yaris"],
+  ["renault-clio","Renault Clio"],["peugeot-208","Peugeot 208"],["tesla-model-3","Tesla Model 3"],["tesla-model-y","Tesla Model Y"],
+  ["kia-niro","Kia Niro"],["volvo-xc40","Volvo XC40"]];
+
+// ---------- analytics (only event names, never plates) ----------
+function track(name) {
+  try { window.goatcounter?.count?.({ path: name, title: name, event: true }); } catch {}
+}
+
+// ---------- language ----------
+function applyStatic() {
+  document.documentElement.lang = LANG;
+  document.title = t("docTitle");
+  document.querySelectorAll("[data-i18n]").forEach(el => { el.textContent = t(el.dataset.i18n); });
+  document.querySelectorAll('a[href^="/auto/"], a[href^="/gids/"]').forEach(a => { a.href = pathFor(a.getAttribute("href")); });
+  $("plate").setAttribute("aria-label", t("plateLabel"));
+  $("lang").textContent = LANG === "en" ? "NL" : "EN";
+  $("lang").setAttribute("aria-label", LANG === "en" ? "Schakel naar Nederlands" : "Switch to English");
+}
+$("lang").addEventListener("click", () => {
+  const to = LANG === "en" ? "nl" : "en";
+  track("taal-" + to);
+  setLang(to);
+});
+
+// ---------- recent searches (this browser only) ----------
+function getRecent() { try { return JSON.parse(localStorage.getItem("recent") || "[]"); } catch { return []; } }
+function addRecent(car) {
+  try {
+    const list = getRecent().filter(r => r.k !== car.kenteken);
+    list.unshift({ k: car.kenteken, label: carName(car) });
+    localStorage.setItem("recent", JSON.stringify(list.slice(0, 5)));
+  } catch {}
+}
+
+function renderChips() {
+  const recent = getRecent();
+  $("chips").innerHTML = recent.length
+    ? `<span class="label">${esc(t("recentLabel"))}</span>` + recent.map(r => `<button type="button" class="chip" data-k="${esc(r.k)}">${esc(r.label)}</button>`).join("")
+    : `<span class="label">${esc(t("tryLabel"))}</span>` + EXAMPLES.map((e, i) => `<button type="button" class="chip" data-ex="${i}">${esc(e.label)}</button>`).join("");
+}
+$("chips").addEventListener("click", (e) => {
+  const b = e.target.closest(".chip"); if (!b) return;
+  if (b.dataset.ex) {
+    const ex = EXAMPLES[+b.dataset.ex];
+    history.replaceState(null, "", `?k=${ex.k}&km=${ex.km}&p=${ex.p}`);
+    $("plate").value = ex.k; search(ex.k); track("voorbeeld-geklikt");
+  } else {
+    history.replaceState(null, "", `?k=${b.dataset.k}`);
+    $("plate").value = b.dataset.k; search(b.dataset.k);
+  }
+});
+
+// ---------- small visuals ----------
+const ICON = {
+  check: `<svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3 8-8"/><path d="M20 12v6a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h9"/></svg>`,
+  euro: `<svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 7a6 6 0 1 0 0 10M4 10h9M4 14h9"/></svg>`,
+  wallet: `<svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="6" width="18" height="13" rx="2"/><path d="M3 10h18M16 14h2"/></svg>`,
+  list: `<svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></svg>`,
+  share: `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12v7a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-7M16 6l-4-4-4 4M12 2v13"/></svg>`,
+};
+
+const COLORS = { ZWART: "#1f2328", WIT: "#f3f4f6", GRIJS: "#8b929c", BLAUW: "#2563eb", ROOD: "#dc2626", GROEN: "#16a34a",
+  GEEL: "#facc15", ORANJE: "#f97316", BRUIN: "#8b5a2b", BEIGE: "#d6c6a5", PAARS: "#7c3aed", ROZE: "#ec4899", CREME: "#f1e9d2" };
+
+// Generic side-view silhouette, tinted in the car's registered colour.
+function carSvg(car) {
+  const fill = COLORS[car.eerste_kleur] || "#9ca3af";
+  const tall = /mpv|terrein|suv|bus/i.test(car.inrichting || "");
+  const body = tall
+    ? "M6 36 L8 22 Q10 14 20 13 L66 11 Q78 11 86 19 L96 25 Q108 27 110 32 L110 38 Q110 40 107 40 L6 40 Z"
+    : "M4 36 L6 28 Q8 24 16 23 L30 21 L44 12 Q48 10 56 10 L74 10 Q82 10 88 16 L94 22 Q108 24 112 30 L112 38 Q112 40 109 40 L4 40 Z";
+  const win = tall
+    ? "M22 16 L50 15 L50 24 L16 25 Q16 18 22 16 Z M54 15 L68 14 Q76 15 82 21 L54 24 Z"
+    : "M46 14 Q49 13 56 13 L64 13 L64 22 L36 22 Z M68 13 L74 13 Q80 14 85 21 L68 22 Z";
+  return `<svg class="car" viewBox="0 0 116 48" aria-hidden="true">
+    <path d="${body}" fill="${fill}" stroke="rgba(0,0,0,.35)" stroke-width="1.5" stroke-linejoin="round"/>
+    <path d="${win}" fill="#bfdbfe" opacity=".85"/>
+    <circle cx="28" cy="40" r="7.5" fill="#111"/><circle cx="28" cy="40" r="3" fill="#9ca3af"/>
+    <circle cx="90" cy="40" r="7.5" fill="#111"/><circle cx="90" cy="40" r="3" fill="#9ca3af"/>
+  </svg>`;
+}
+
+const hp = (kw) => Math.round(kw * 1.36);
+function powerText(fx) {
+  if (!fx.kw && !fx.kwElec) return null;
+  if (fx.kwElec && fx.kw) return `${hp(fx.kw)} ${t("hp")} + ${hp(fx.kwElec)} ${t("hpElectric")}`;
+  return `${hp(fx.kw || fx.kwElec)} ${t("hp")}`;
+}
+
+// Meter scale: asking price from 50% to 150% of our estimate.
+const ZONES = [[0.5, 0.6, "var(--c-fuel)"], [0.6, 0.88, "#22c55e"], [0.88, 1.1, "#3b82f6"], [1.1, 1.3, "#f59e0b"], [1.3, 1.5, "#ef4444"]];
+const ratioToPct = (r) => Math.min(100, Math.max(0, (r - 0.5) / 1.0 * 100));
+
+// ---------- render: home ----------
+function renderHome() {
+  $("out").innerHTML = `
+    <div class="card">
+      <h2>${esc(t("howTitle"))}</h2>
+      <div class="steps">
+        ${[1, 2, 3].map(n => `<div class="step"><div class="n">${n}</div><b>${esc(t(`step${n}T`))}</b><span>${esc(t(`step${n}D`))}</span></div>`).join("")}
+      </div>
+    </div>
+    <div class="card">
+      <h2>${esc(t("popularTitle"))}</h2>
+      <div class="pills">
+        ${POPULAR.map(([s, n]) => `<a class="pill" href="${pathFor(`/auto/${s}/`)}">${n}</a>`).join("")}
+        <a class="pill" href="${pathFor("/auto/")}">${esc(t("allModels"))}</a>
+      </div>
+    </div>
+    <div class="card">
+      <h2>${esc(t("guideTitle"))}</h2>
+      <div class="pills">
+        <a class="pill" href="${pathFor("/gids/tweedehands-auto-kopen-checklist/")}">${esc(t("guideChecklist"))}</a>
+        <a class="pill" href="${pathFor("/gids/importauto-kopen/")}">${esc(t("guideImport"))}</a>
+        <a class="pill" href="${pathFor("/gids/kosten-auto-per-maand/")}">${esc(t("guideCosts"))}</a>
+      </div>
+    </div>`;
+}
+
+// ---------- render: results ----------
+function renderAll() {
+  const { car, fuel } = state;
+  const fx = facts(car, fuel);
+  const km = num($("km").value);
+  const asking = num($("ask").value);
+  const kmYear = num($("kmy")?.value ?? "") || 12000;
+  const v = estimateValue(car, fx, km);
+
+  // value + deal
+  let html = "";
+  if (v.ok) {
+    let markerHtml = "", verdictHtml = "";
+    if (asking) {
+      const [cls, title, text] = verdict(asking, v);
+      if (!dealTracked && asking >= 1000) { dealTracked = true; track("deal-check"); }
+      markerHtml = `<div class="marker" id="marker" style="left:${lastMarker}%"><span class="tag">${euro(asking)}</span><span class="pin"></span></div>`;
+      verdictHtml = `<div class="verdict ${cls}"><p class="big">${esc(title)}</p><p>${esc(text)}</p></div>`;
+    }
+    const age = v.age.toLocaleString(LOCALE(), { maximumFractionDigits: 1, minimumFractionDigits: 1 });
+    html += `
+      <div class="value-range"><div class="l">${esc(t("valueLabel"))}</div><div class="v">${euro(v.low)} – ${euro(v.high)}</div></div>
+      <div class="meter">
+        ${markerHtml}
+        <div class="bar">${ZONES.map(([a, b, c]) => `<span style="width:${(b - a) * 100}%;background:${c}"></span>`).join("")}</div>
+        <div class="labels"><span style="left:0">${esc(t("mTooCheap"))}</span><span style="left:24%">${esc(t("mBargain"))}</span><span style="left:49%">${esc(t("mFair"))}</span><span style="left:70%">${esc(t("mPricey"))}</span><span style="left:100%">${esc(t("mTooExp"))}</span></div>
+      </div>
+      ${verdictHtml || `<div class="hint">${t("askHint")}</div>`}
+      <p class="note">${esc(t("valueNote", { price: euro(v.price), age }))}${v.notes.length ? " · " + esc(v.notes.join(", ")) : ""}.
+        ${esc(v.withKm ? t("noteWithKm") : t("noteNoKm"))}</p>`;
+  } else {
+    html += `<p class="note">${esc(v.reason)}</p>`;
+  }
+  $("valueOut").innerHTML = html;
+
+  // animate the marker to its new spot
+  if (v.ok && asking) {
+    const target = ratioToPct(asking / v.mid);
+    requestAnimationFrame(() => requestAnimationFrame(() => { const m = $("marker"); if (m) m.style.left = target + "%"; }));
+    lastMarker = target;
+  }
+
+  // monthly costs
+  const prov = $("prov")?.value || "";
+  const ins = num($("ins")?.value ?? "");
+  const tax = roadTaxPerMonth(car, fx, prov);
+  const fuelCost = fuelPerMonth(fx, kmYear);
+  let dep = null;
+  if (v.ok) {
+    const next = estimateValue(car, fx, km != null ? km + kmYear : null, 1);
+    if (next.ok) dep = Math.max(0, (v.mid - next.mid) / 12);
+  }
+  const rows = [];
+  const taxSub = prov ? t("costTaxProv", { prov: PROVINCES[prov], opc: OPCENTEN[prov].toLocaleString(LOCALE()) }) : t("costTaxSub");
+  if (tax) rows.push([t("costTax"), tax.note ? `${taxSub} · ${tax.note}` : taxSub, tax.amount, "var(--c-tax)"]);
+  if (ins) rows.push([t("costIns"), t("costInsSub"), ins, "var(--c-ins)"]);
+  if (fuelCost) rows.push([fx.isEV ? t("costPower") : t("costFuel"), fuelCost.use, fuelCost.amount, "var(--c-fuel)"]);
+  if (dep != null) rows.push([t("costDep"), t("costDepSub"), dep, "var(--c-dep)"]);
+  const total = rows.reduce((s, r) => s + r[2], 0);
+  const price = (n) => n.toLocaleString(LOCALE(), { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  $("costOut").innerHTML = rows.length ? `
+    <div class="cost-total"><span class="v">${euro(total)}</span><span class="l">${esc(t("perMonth"))}</span></div>
+    <div class="stack">${rows.map(r => `<span style="width:${total ? r[2] / total * 100 : 0}%;background:${r[3]}"></span>`).join("")}</div>
+    ${rows.map(([n, sub, a, c]) => `<div class="cost-row"><span class="dot" style="background:${c}"></span>
+      <span class="name">${esc(n)}<small>${esc(sub)}</small></span><span class="amt">${euro(a)}</span></div>`).join("")}
+    <p class="note">${esc(t(ins ? "costsNoteIns" : "costsNote", { b: price(FUEL_PRICE.benzine), d: price(FUEL_PRICE.diesel), e: price(FUEL_PRICE.elektriciteit) }))}</p>`
+    : `<p class="note">${esc(t("noCosts"))}</p>`;
+}
+
+function renderCar() {
+  const { car, fuel } = state;
+  const fx = facts(car, fuel);
+  const firstNL = parseDate(car.datum_eerste_tenaamstelling_in_nederland);
+  const apk = parseDate(car.vervaldatum_apk);
+  const year = fx.first ? fx.first.getFullYear() : "–";
+
+  const badges = [];
+  if (apk) {
+    const days = (apk - Date.now()) / 864e5;
+    badges.push(days < 0 ? ["bad", t("badgeApkExpired")] : days < 60 ? ["warn", t("badgeApkSoon")] : ["good", t("badgeApkOk")]);
+  }
+  if (car.tellerstandoordeel) badges.push(/onlogisch/i.test(car.tellerstandoordeel) ? ["bad", t("badgeKmBad")] : ["good", t("badgeKmOk")]);
+  if (car.openstaande_terugroepactie_indicator === "Ja") badges.push(["warn", t("badgeRecall")]);
+  if (car.wam_verzekerd === "Nee") badges.push(["warn", t("badgeUninsured")]);
+  if (car.export_indicator === "Ja") badges.push(["warn", t("badgeExport")]);
+  if (fx.first && firstNL && firstNL - fx.first > 180 * 864e5) badges.push(["warn", t("badgeImport")]);
+
+  const f = fx.isEV ? fx.f : fx.main;
+  const kg = (n) => n ? `${(+n).toLocaleString(LOCALE())} kg` : null;
+  const m = (n) => n ? `${(+n / 100).toLocaleString(LOCALE(), { minimumFractionDigits: 2, maximumFractionDigits: 2 })} m` : null;
+  const dec1 = (n) => (+n).toLocaleString(LOCALE(), { minimumFractionDigits: 1, maximumFractionDigits: 1 });
+  const body = car.inrichting ? rdwText(car.inrichting) : "";
+  const groups = [
+    [t("gEngine"), [
+      [t("sFuel"), fx.fuelLabel],
+      [t("sPower"), powerText(fx)],
+      [t("sCc"), car.cilinderinhoud ? `${car.cilinderinhoud} cc` : null],
+      [t("sCyl"), car.aantal_cilinders],
+      [t("sUse"), f.brandstof_verbruik_gecombineerd_wltp ? `${dec1(f.brandstof_verbruik_gecombineerd_wltp)} l/100 km` : null],
+      [t("sEUse"), fx.elec?.elektrisch_verbruik_enkel_elektrisch_wltp ? `${Math.round(fx.elec.elektrisch_verbruik_enkel_elektrisch_wltp / 10)} kWh/100 km` : null],
+      [t("sRange"), fx.elec?.actie_radius_enkel_elektrisch_wltp ? `${fx.elec.actie_radius_enkel_elektrisch_wltp} km` : null],
+      [t("sCo2"), f.emissie_co2_gecombineerd_wltp ? `${f.emissie_co2_gecombineerd_wltp} g/km` : null],
+      [t("sEuro"), f.uitlaatemissieniveau],
+      [t("sTop"), car.maximale_constructiesnelheid ? `${car.maximale_constructiesnelheid} ${t("kmh")}` : null],
+    ]],
+    [t("gSize"), [
+      [t("sBody"), body || null],
+      [t("sDoors"), car.aantal_deuren || car.aantal_zitplaatsen ? `${car.aantal_deuren || "–"} / ${car.aantal_zitplaatsen || "–"}` : null],
+      [t("sDims"), car.lengte && car.breedte && car.hoogte_voertuig ? `${m(car.lengte)} × ${m(car.breedte)} × ${m(car.hoogte_voertuig)}` : null],
+      [t("sMass"), kg(car.massa_ledig_voertuig)],
+      [t("sTowB"), kg(car.maximum_trekken_massa_geremd)],
+      [t("sTowU"), kg(car.maximum_massa_trekken_ongeremd)],
+    ]],
+    [t("gReg"), [
+      [t("sPlate"), car.kenteken],
+      [t("sFirst"), fmtDate(fx.first)],
+      [t("sFirstNL"), fmtDate(firstNL)],
+      [t("sApk"), fmtDate(apk)],
+      [t("sColour"), known(car.eerste_kleur) ? rdwText(car.eerste_kleur) : null],
+      [t("sPrice"), car.catalogusprijs ? euro(+car.catalogusprijs) : null],
+      [t("sLabel"), car.zuinigheidsclassificatie],
+    ]],
+  ].map(([title, rows]) => [title, rows.filter(([, val]) => val)]).filter(([, rows]) => rows.length);
+
+  const tiles = [
+    [t("tileYear"), year],
+    [t("tilePower"), fx.kw ? `${hp(fx.kw)} ${t("hp")}` + (fx.kwElec ? " + E" : "") : "–"],
+    [t("tileFuel"), fx.isEV ? t("fElectric") : fx.isPHEV ? t("fPluginShort") : fx.isHybrid ? t("fHybridShort") : fx.fuelName || "–"],
+    [t("tileApk"), apk ? apk.toLocaleDateString(LOCALE(), { month: "short", year: "numeric" }) : "–"],
+  ];
+
+  $("out").innerHTML = `
+    <div class="card">
+      <div class="car-head">
+        ${carSvg(car)}
+        <div><p class="car-title">${esc(carName(car))}</p>
+          <p class="car-sub">${esc([year, fx.fuelLabel, body].filter(Boolean).join(" · "))}</p></div>
+      </div>
+      <div class="tiles">${tiles.map(([l, val]) => `<div class="tile"><div class="l">${esc(l)}</div><div class="v">${esc(val)}</div></div>`).join("")}</div>
+      <div class="badges">${badges.map(([c, txt]) => `<span class="badge ${c}">${esc(txt)}</span>`).join("")}</div>
+      <div class="actions"><button type="button" class="link-btn" id="share">${ICON.share} ${esc(t("share"))}</button></div>
+    </div>
+
+    <div class="card">
+      <h2>${ICON.euro} ${esc(t("dealTitle"))}</h2>
+      <div class="inputs">
+        <label>${esc(t("askLabel"))}<input id="ask" inputmode="numeric" placeholder="${esc(t("egAsk"))}"></label>
+        <label>${esc(t("kmLabel"))}<input id="km" inputmode="numeric" placeholder="${esc(t("egKm"))}"></label>
+      </div>
+      <div id="valueOut"></div>
+      ${compareHtml(car, fx)}
+    </div>
+
+    <div class="card">
+      <h2>${ICON.wallet} ${esc(t("costsTitle"))}</h2>
+      <div id="costOut"></div>
+      <div class="cost-opts">
+        <label>${esc(t("kmYearLabel"))}<input id="kmy" inputmode="numeric" placeholder="12000"></label>
+        <label>${esc(t("provLabel"))}<select id="prov"><option value="">${esc(t("provAvg"))}</option>
+          ${Object.entries(PROVINCES).sort((a, b) => a[1].localeCompare(b[1])).map(([k, n]) => `<option value="${k}">${esc(n)}</option>`).join("")}</select></label>
+        <label>${esc(t("insLabel"))}<input id="ins" inputmode="numeric" placeholder="${esc(t("insPh"))}"></label>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>${ICON.check} ${esc(t("apkTitle"))}</h2>
+      <div id="apkOut"><div class="skel" style="height:64px"></div><div class="skel" style="height:90px;margin-top:16px"></div></div>
+    </div>
+
+    <div class="card">
+      <h2>${ICON.list} ${esc(t("specsTitle"))}</h2>
+      ${groups.map(([title, rows], i) => `<details ${i === 0 ? "open" : ""}><summary>${esc(title)}</summary>
+        <dl>${rows.map(([k, val]) => `<dt>${esc(k)}</dt><dd>${esc(val)}</dd>`).join("")}</dl></details>`).join("")}
+    </div>`;
+
+  // Prefill from link (?k=..&km=..&p=..&j=..) so a deal check can be shared.
+  const q = new URLSearchParams(location.search);
+  for (const [id, key] of [["km", "km"], ["ask", "p"], ["kmy", "j"]]) {
+    if (q.get(key)) $(id).value = q.get(key);
+    $(id).addEventListener("input", () => { renderAll(); updateLink(); });
+  }
+  // Province + insurance are personal: remembered on this device, never put in the share link.
+  for (const id of ["prov", "ins"]) {
+    try { $(id).value = localStorage.getItem("cost-" + id) || ""; } catch {}
+    $(id).addEventListener(id === "prov" ? "change" : "input", () => {
+      try { localStorage.setItem("cost-" + id, $(id).value); } catch {}
+      renderAll();
+    });
+  }
+  $("share").addEventListener("click", share);
+  renderAll();
+  loadApk(car, fx);
+}
+
+// ---------- compare with similar cars for sale (opens the search on the other site) ----------
+function compareLinks(car, fx) {
+  const slug = (s) => s.toLowerCase().replace(/[!']/g, "").replace(/&/g, "-").replace(/[^a-z0-9.]+/g, "-").replace(/^-+|-+$/g, "");
+  const brand = car.merk || "";
+  let model = (car.handelsbenaming || "").trim().toUpperCase();
+  if (model.startsWith(brand + " ")) model = model.slice(brand.length + 1);
+  if (brand === "LYNK&CO") model = model.replace(/^LYNK & CO /, "");
+  const w = model.split(/\s+/).filter(Boolean);
+  // "MODEL 3", "SERIE 3" and "ID. 3" need two words; otherwise the first word is the model ("GOLF VARIANT" → golf).
+  const m = slug(w.length > 1 && (/^(MODEL|SERIE|CLASS|ID\.?)$/.test(w[0]) || /^\d$/.test(w[1])) ? w.slice(0, 2).join(" ") : (w[0] || ""));
+  const b = slug(brand);
+  if (!b || !m) return [];
+  const y = fx.first ? fx.first.getFullYear() : null;
+  const yr = (a, z) => y ? `?${a}=${y - 1}&${z}=${y + 1}` : "";
+  return [
+    // Each site spells some names differently: Gaspedaal "id3", AutoScout24 "lynk-and-co".
+    ["Gaspedaal", `https://www.gaspedaal.nl/${b}/${m.includes(".") ? m.replace(/[.-]/g, "") : m}${yr("bmin", "bmax")}`],
+    ["Marktplaats", `https://www.marktplaats.nl/l/auto-s/${b}/q/${m}/`],
+    ["AutoScout24", `https://www.autoscout24.nl/lst/${slug(brand.replace(/&/g, " and "))}/${m}${yr("fregfrom", "fregto")}`],
+  ];
+}
+
+function compareHtml(car, fx) {
+  const links = compareLinks(car, fx);
+  if (!links.length || car.voertuigsoort !== "Personenauto") return "";
+  const y = fx.first ? fx.first.getFullYear() : null;
+  return `<div class="compare"><p>${esc(t(y ? "compareText" : "compareTextNoYear", { car: carName(car), from: y - 1, to: y + 1 }))}</p>
+    <div class="row">${links.map(([name, url]) => `<a class="link-btn" href="${esc(url)}" target="_blank" rel="noopener nofollow"
+      onclick="track('vergelijk-${name.toLowerCase()}')">${esc(name)} ↗</a>`).join("")}</div></div>`;
+}
+
+// ---------- APK history (loaded after the main card, so it never slows the first result) ----------
+async function loadApk(car, fx) {
+  const plate = car.kenteken;
+  let list;
+  if (state.apk) return renderApk(fx);   // e.g. after a language switch
+  try { list = await apkHistory(plate); }
+  catch { if (state?.car.kenteken === plate) $("apkOut").innerHTML = `<p class="note">${esc(t("apkError"))}</p>`; return; }
+  if (state?.car.kenteken !== plate || !$("apkOut")) return;   // user already searched another plate
+  state.apk = list;
+  renderApk(fx);
+}
+
+function renderApk(fx) {
+  const list = state.apk;
+  if (!list.length) {
+    $("apkOut").innerHTML = `<p class="note" style="margin:0">${esc(fx.age != null && fx.age < 4.2 ? t("apkTooNew") : t("apkNone"))}</p>`;
+    return;
+  }
+  const sum = (adv) => list.reduce((n, x) => n + x.defects.filter(d => d.advice === adv).reduce((m, d) => m + d.count, 0), 0);
+  const defects = sum(false), advice = sum(true);
+  const SHOW = 4;
+  const items = list.map((x, i) => {
+    const nDef = x.defects.filter(d => !d.advice).reduce((m, d) => m + d.count, 0);
+    const [cls, label] = nDef ? ["warn", nDef === 1 ? t("apkDefect1") : t("apkDefectN", { n: nDef })]
+      : x.defects.length ? ["ok", t("apkAdviceOnly")] : ["good", t("apkClean")];
+    const color = { good: "var(--good)", ok: "var(--ok)", warn: "var(--warn)" }[cls];
+    return `<li class="apk-item${i >= SHOW ? " hidden" : ""}"><span class="dot" style="background:${color}"></span>
+      <div class="apk-head"><b>${esc(fmtDate(x.date))}</b><span class="badge ${cls}">${esc(label)}</span></div>
+      ${x.defects.length ? `<ul>${x.defects.map(d => `<li>${d.advice ? `<span class="tag">${esc(t("apkAdviceTag"))}</span>` : ""}
+        <span>${esc(d.text)}</span>${d.count > 1 ? `<span class="x">${d.count}×</span>` : ""}</li>`).join("")}</ul>` : ""}</li>`;
+  }).join("");
+  const stats = [[t("apkChecks"), list.length], [t("apkDefectsL"), defects], [t("apkAdviceL"), advice]];
+  $("apkOut").innerHTML = `
+    <div class="tiles apk-stats">${stats.map(([l, v]) => `<div class="tile"><div class="l">${esc(l)}</div><div class="v">${v}</div></div>`).join("")}</div>
+    <ul class="apk-list">${items}</ul>
+    ${list.length > SHOW ? `<button type="button" class="link-btn" id="apkMore">${esc(t("apkMore", { n: list.length }))}</button>` : ""}
+    <p class="note">${esc(t("apkNote"))}${list.some(x => x.defects.some(d => d.dutch)) ? " " + esc(t("apkDutch")) : ""}</p>`;
+  $("apkMore")?.addEventListener("click", (e) => {
+    document.querySelectorAll(".apk-item.hidden").forEach(el => el.classList.remove("hidden"));
+    e.currentTarget.remove();
+  });
+}
+
+function updateLink() {
+  const p = new URLSearchParams({ k: state.car.kenteken });
+  for (const [id, key] of [["km", "km"], ["ask", "p"], ["kmy", "j"]]) {
+    const n = num($(id).value);
+    if (n) p.set(key, n);
+  }
+  history.replaceState(null, "", "?" + p);
+}
+
+async function share() {
+  // Shared links open in the sharer's language.
+  const url = new URL(location.href);
+  url.searchParams.delete("lang");   // the path (/ or /en/) already sets the language
+  const title = t("shareTitle", { car: carName(state.car) });
+  track("gedeeld");
+  try {
+    if (navigator.share) { await navigator.share({ title, url: url.toString() }); return; }
+    await navigator.clipboard.writeText(url.toString());
+    $("share").textContent = t("shareCopied");
+  } catch { /* user cancelled */ }
+}
+
+function renderLoading() {
+  $("out").innerHTML = `<div class="card"><div class="skel" style="height:52px;width:70%"></div>
+    <div class="skel" style="height:64px;margin-top:16px"></div></div>
+    <div class="card"><div class="skel" style="height:120px"></div></div>`;
+}
+
+// ---------- search ----------
+async function search(raw) {
+  const plate = clean(raw);
+  if (plate.length < 4) {
+    state = null;
+    $("out").innerHTML = `<div class="card"><p class="msg error">${esc(t("invalidPlate"))}</p></div>`;
+    return;
+  }
+  $("go").disabled = true;
+  lastMarker = 50;
+  renderLoading();
+  try {
+    const { car, fuel } = await lookup(plate);
+    if (!car) {
+      state = null;
+      track("kenteken-niet-gevonden");
+      $("out").innerHTML = `<div class="card"><p class="msg error">${esc(t("notFound", { plate }))}<br>
+        <small>${esc(t("notFoundHint"))}</small></p></div>`;
+      return;
+    }
+    if (clean(new URLSearchParams(location.search).get("k") || "") !== plate) history.replaceState(null, "", `?k=${plate}`);
+    state = { car, fuel };
+    dealTracked = false;
+    track("kenteken-gezocht");
+    addRecent(car);
+    renderChips();
+    renderCar();
+  } catch (err) {
+    state = null;
+    $("out").innerHTML = `<div class="card"><p class="msg error">${esc(err.message || t("genericError"))}</p></div>`;
+  } finally {
+    $("go").disabled = false;
+  }
+}
+
+$("form").addEventListener("submit", (e) => { e.preventDefault(); $("plate").blur(); search($("plate").value); });
+
+applyStatic();
+renderChips();
+const initial = new URLSearchParams(location.search).get("k");
+if (initial) { $("plate").value = initial; search(initial); }
+else renderHome();
+</script>
+</body>
+</html>

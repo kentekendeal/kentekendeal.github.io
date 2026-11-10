@@ -1,13 +1,13 @@
 <!doctype html>
-<html lang="nl">
+<html lang="nl" data-lang="nl">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>KentekenDeal: is deze auto zijn prijs waard?</title>
 <meta name="description" content="Vul een kenteken in: specificaties, wat de auto waard is, of de vraagprijs eerlijk is en wat hij per maand kost.">
 <meta name="theme-color" content="#0E1B3D">
-<link rel="icon" href="assets/logo-icon.svg" type="image/svg+xml">
-<link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
+<link rel="icon" href="/assets/logo-icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="/assets/apple-touch-icon.png">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="KentekenDeal">
 <meta property="og:title" content="Is deze auto zijn prijs waard?">
@@ -16,7 +16,17 @@
 <meta property="og:url" content="https://kentekendeal.nl/">
 <meta name="twitter:card" content="summary_large_image">
 <link rel="canonical" href="https://kentekendeal.nl/">
+<link rel="alternate" hreflang="nl" href="https://kentekendeal.nl/">
+<link rel="alternate" hreflang="en" href="https://kentekendeal.nl/en/">
+<link rel="alternate" hreflang="x-default" href="https://kentekendeal.nl/">
 <script>
+  // Old links with ?lang=en (and returning visitors who chose English) go to the English page.
+  (function () {
+    if (document.documentElement.dataset.lang !== "nl") return;
+    var q = new URLSearchParams(location.search), want = q.get("lang"), saved = null;
+    try { saved = localStorage.getItem("lang"); } catch (e) {}
+    if (want === "en" || (!want && saved === "en")) { q.delete("lang"); var s = q.toString(); location.replace("/en/" + (s ? "?" + s : "")); }
+  })();
   // A plate check (?k=...) is a personal lookup: don't let search engines index it.
   if (new URLSearchParams(location.search).has("k")) document.write('<meta name="robots" content="noindex">');
 </script>
@@ -235,7 +245,7 @@
 <section class="hero">
   <div class="wrap">
     <header class="site-header">
-      <a class="brand" href="./" aria-label="KentekenDeal home"><img src="assets/logo-icon.svg" alt="">kenteken<b>deal</b></a>
+      <a class="brand" href="/" aria-label="KentekenDeal home"><img src="/assets/logo-icon.svg" alt="">kenteken<b>deal</b></a>
       <nav class="top-nav">
         <a href="/auto/" data-i18n="navCars">Auto's</a><a href="/gids/" data-i18n="navGuide">Koopgids</a>
         <button type="button" class="lang" id="lang" aria-label="Switch language">EN</button>
@@ -264,8 +274,8 @@
   © KentekenDeal
 </footer>
 
-<script src="i18n.js"></script>
-<script src="model.js"></script>
+<script src="/i18n.js"></script>
+<script src="/model.js"></script>
 <script>
 const $ = (id) => document.getElementById(id);
 let state = null;          // { car, fuel }
@@ -292,16 +302,15 @@ function applyStatic() {
   document.documentElement.lang = LANG;
   document.title = t("docTitle");
   document.querySelectorAll("[data-i18n]").forEach(el => { el.textContent = t(el.dataset.i18n); });
+  document.querySelectorAll('a[href^="/auto/"], a[href^="/gids/"]').forEach(a => { a.href = pathFor(a.getAttribute("href")); });
   $("plate").setAttribute("aria-label", t("plateLabel"));
   $("lang").textContent = LANG === "en" ? "NL" : "EN";
   $("lang").setAttribute("aria-label", LANG === "en" ? "Schakel naar Nederlands" : "Switch to English");
 }
 $("lang").addEventListener("click", () => {
-  setLang(LANG === "en" ? "nl" : "en");
-  track("taal-" + LANG);
-  applyStatic();
-  renderChips();
-  if (state) renderCar(); else if (!$("out").querySelector(".msg")) renderHome();
+  const to = LANG === "en" ? "nl" : "en";
+  track("taal-" + to);
+  setLang(to);
 });
 
 // ---------- recent searches (this browser only) ----------
@@ -385,16 +394,16 @@ function renderHome() {
     <div class="card">
       <h2>${esc(t("popularTitle"))}</h2>
       <div class="pills">
-        ${POPULAR.map(([s, n]) => `<a class="pill" href="/auto/${s}/">${n}</a>`).join("")}
-        <a class="pill" href="/auto/">${esc(t("allModels"))}</a>
+        ${POPULAR.map(([s, n]) => `<a class="pill" href="${pathFor(`/auto/${s}/`)}">${n}</a>`).join("")}
+        <a class="pill" href="${pathFor("/auto/")}">${esc(t("allModels"))}</a>
       </div>
     </div>
     <div class="card">
       <h2>${esc(t("guideTitle"))}</h2>
       <div class="pills">
-        <a class="pill" href="/gids/tweedehands-auto-kopen-checklist/">${esc(t("guideChecklist"))}</a>
-        <a class="pill" href="/gids/importauto-kopen/">${esc(t("guideImport"))}</a>
-        <a class="pill" href="/gids/kosten-auto-per-maand/">${esc(t("guideCosts"))}</a>
+        <a class="pill" href="${pathFor("/gids/tweedehands-auto-kopen-checklist/")}">${esc(t("guideChecklist"))}</a>
+        <a class="pill" href="${pathFor("/gids/importauto-kopen/")}">${esc(t("guideImport"))}</a>
+        <a class="pill" href="${pathFor("/gids/kosten-auto-per-maand/")}">${esc(t("guideCosts"))}</a>
       </div>
     </div>`;
 }
@@ -660,7 +669,7 @@ function renderApk(fx) {
     <div class="tiles apk-stats">${stats.map(([l, v]) => `<div class="tile"><div class="l">${esc(l)}</div><div class="v">${v}</div></div>`).join("")}</div>
     <ul class="apk-list">${items}</ul>
     ${list.length > SHOW ? `<button type="button" class="link-btn" id="apkMore">${esc(t("apkMore", { n: list.length }))}</button>` : ""}
-    <p class="note">${esc(t("apkNote"))} ${esc(t("apkDutch"))}</p>`;
+    <p class="note">${esc(t("apkNote"))}${list.some(x => x.defects.some(d => d.dutch)) ? " " + esc(t("apkDutch")) : ""}</p>`;
   $("apkMore")?.addEventListener("click", (e) => {
     document.querySelectorAll(".apk-item.hidden").forEach(el => el.classList.remove("hidden"));
     e.currentTarget.remove();
@@ -679,7 +688,7 @@ function updateLink() {
 async function share() {
   // Shared links open in the sharer's language.
   const url = new URL(location.href);
-  if (LANG === "en") url.searchParams.set("lang", "en"); else url.searchParams.delete("lang");
+  url.searchParams.delete("lang");   // the path (/ or /en/) already sets the language
   const title = t("shareTitle", { car: carName(state.car) });
   track("gedeeld");
   try {

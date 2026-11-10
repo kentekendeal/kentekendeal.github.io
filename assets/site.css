@@ -112,3 +112,7 @@ footer nav { display: flex; gap: 16px; justify-content: center; flex-wrap: wrap;
   margin-left: 6px; white-space: nowrap; color: var(--muted); border: 1px solid var(--line); }
 .defects .tag.hot { color: #b45309; border-color: #fcd34d; background: #fffbeb; }
 @media (prefers-color-scheme: dark) { .defects .tag.hot { color: #fcd34d; border-color: #78350f; background: #2a1a05; } }
+
+/* language switch (NL / EN) */
+.nav .lang, footer nav .lang { font-weight: 700; }
+.top .nav .lang { border: 1px solid rgba(255,255,255,.35); border-radius: 8px; padding: 2px 8px; }

@@ -12,16 +12,26 @@ Static site, no server, no build step for the app. Vehicle data comes live from
 
 | Path | What it is |
 |---|---|
-| `index.html` | The app: plate lookup, deal meter, monthly costs, APK history, specs. NL/EN switch. |
+| `index.html` | The app (Dutch, at `/`): plate lookup, deal meter, monthly costs, APK history, specs. |
+| `en/index.html` | **Generated** English copy of the app at `/en/`. Edit `index.html`, then run `python tools/build_pages.py --home`. |
 | `model.js` | All calculations: RDW lookup, value estimate, deal verdict, road tax, fuel cost. **Tunable numbers live in `PARAMS` at the top.** |
 | `i18n.js` | All user-facing text in Dutch and English (`t("key")`). Load before `model.js`. |
 | `calibrate.html` | Hidden tool (noindex): paste real ads (`PLATE KM PRICE`) → compares with our estimate and suggests better `PARAMS`. |
-| `auto/` | **Generated** model pages (60 most popular models). Do not edit by hand. |
-| `gids/` | Hand-written buyer guides (Dutch). |
+| `auto/`, `en/cars/` | **Generated** model pages (60 most popular models), Dutch and English. Do not edit by hand. |
+| `gids/`, `en/guide/` | Hand-written buyer guides, Dutch and English. Each pair links to the other with `hreflang`. |
+| `tools/defects_en.json`, `tools/defects_nl.json` | English texts for the 120 most common APK defect codes, and full Dutch texts where the RDW cuts them off. Used by the app and the model pages. |
 | `assets/` | Logo, icons, social preview image, `site.css` (shared style for `auto/` and `gids/`). |
 | `tools/build_pages.py` | Generates `auto/` and `sitemap.xml` from RDW data. Reads `PARAMS` etc. from `model.js`. |
 | `.github/workflows/update-pages.yml` | Runs `build_pages.py` on the 1st of every month and publishes changes. |
 | `robots.txt`, `sitemap.xml` | Search engine rules. Plate checks (`/?k=`) are kept out of search engines on purpose. |
+
+## Languages
+
+- The URL decides the language: `/`, `/auto/`, `/gids/` are Dutch; `/en/`, `/en/cars/`, `/en/guide/` are English.
+  Every page has `hreflang` links to its twin, so Google shows the right one. The NL/EN button goes to the twin page.
+- Old links with `?lang=en` and visitors who chose English before are sent from `/` to `/en/`.
+- Path mapping lives in two places: `GUIDE_EN` in `i18n.js` and in `tools/build_pages.py`. Keep them in sync.
+- A new guide needs both a Dutch and an English page, a `GUIDE_EN` entry, and the hreflang links.
 
 ## Common tasks
 
