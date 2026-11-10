@@ -49,6 +49,8 @@ const I18N = {
     costsNote: "Exclusief verzekering en onderhoud. Brandstof: benzine € {b}, diesel € {d}, stroom € {e}/kWh.",
     noCosts: "Voor dit voertuig kunnen we geen kosten berekenen.",
     compareText: "Vergelijk met wat nu te koop staat ({car}, bouwjaar {from}–{to}):", compareTextNoYear: "Vergelijk met wat nu te koop staat ({car}):",
+    histTitle: "Schade en buitenlandse kilometerstanden", histText: "De RDW publiceert geen schadehistorie en geen kilometerstanden van vóór een import. Een historierapport laat ook schades, eerdere tellerstanden, diefstal en oude advertentiefoto's zien.",
+    histBtn: "Check de volledige historie", histAd: "Advertentie: KentekenDeal ontvangt een vergoeding als je via deze link een rapport koopt. Dit kost jou niets extra.",
     // APK history
     apkTitle: "APK-geschiedenis", apkChecks: "Keuringen", apkDefectsL: "Gebreken", apkAdviceL: "Adviespunten",
     apkClean: "Geen gebreken", apkDefect1: "1 gebrek", apkDefectN: "{n} gebreken", apkAdviceOnly: "Alleen advies", apkAdviceTag: "advies",
@@ -125,6 +127,8 @@ const I18N = {
     costsNote: "Excluding insurance and maintenance. Fuel: petrol € {b}, diesel € {d}, electricity € {e}/kWh.",
     noCosts: "We can't calculate costs for this vehicle.",
     compareText: "Compare with what's for sale right now ({car}, {from}–{to}):", compareTextNoYear: "Compare with what's for sale right now ({car}):",
+    histTitle: "Damage and foreign mileage readings", histText: "The RDW doesn't publish damage history or mileage readings from before an import. A history report also shows damage, earlier odometer readings, theft and old sale photos.",
+    histBtn: "Check the full history", histAd: "Ad: KentekenDeal receives a commission if you buy a report through this link. It costs you nothing extra.",
     // APK history
     apkTitle: "MOT (APK) history", apkChecks: "Inspections", apkDefectsL: "Defects", apkAdviceL: "Advisories",
     apkClean: "No defects", apkDefect1: "1 defect", apkDefectN: "{n} defects", apkAdviceOnly: "Advisories only", apkAdviceTag: "advisory",

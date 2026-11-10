@@ -196,6 +196,12 @@
   .cost-opts input:focus, .cost-opts select:focus { outline: 2px solid var(--accent); outline-offset: -1px; }
   @media (max-width: 520px) { .cost-opts { grid-template-columns: 1fr 1fr; } }
 
+  /* history report (affiliate) */
+  .history p { margin: 0 0 12px; }
+  .btn-cta { display: inline-block; background: var(--accent); color: #fff; font-weight: 700; text-decoration: none;
+    border-radius: 12px; padding: 12px 18px; }
+  .btn-cta:hover { filter: brightness(1.08); }
+
   /* compare with listings */
   .compare { margin-top: 16px; padding-top: 14px; border-top: 1px solid var(--line); }
   .compare p { margin: 0 0 8px; font-size: .88rem; color: var(--muted); }
@@ -284,6 +290,11 @@ let dealTracked = false;
 let lastMarker = 50;       // meter marker position (%), so it animates from where it was
 
 // Example ads (dealer listings) to try the deal check in one tap.
+// Affiliate links. Empty = the block is hidden. Paste the link from the partner dashboard here (exactly as given, no redirects).
+const AFFILIATE = {
+  carvertical: "",
+};
+
 const EXAMPLES = [
   { k: "KLJ73X", km: 11250, p: 34000, label: "Nissan Qashqai" },
   { k: "T780VD", km: 48032, p: 31250, label: "Skoda Karoq" },
@@ -577,6 +588,7 @@ function renderCar() {
       <h2>${ICON.check} ${esc(t("apkTitle"))}</h2>
       <div id="apkOut"><div class="skel" style="height:64px"></div><div class="skel" style="height:90px;margin-top:16px"></div></div>
     </div>
+    ${historyHtml()}
 
     <div class="card">
       <h2>${ICON.list} ${esc(t("specsTitle"))}</h2>
@@ -601,6 +613,17 @@ function renderCar() {
   $("share").addEventListener("click", share);
   renderAll();
   loadApk(car, fx);
+}
+
+// ---------- full history report (affiliate, only shown when a link is set) ----------
+function historyHtml() {
+  if (!AFFILIATE.carvertical) return "";
+  return `<div class="card history">
+    <h2>${ICON.list} ${esc(t("histTitle"))}</h2>
+    <p>${esc(t("histText"))}</p>
+    <a class="btn-cta" href="${esc(AFFILIATE.carvertical)}" target="_blank" rel="sponsored noopener" onclick="track('affiliate-carvertical')">${esc(t("histBtn"))} ↗</a>
+    <p class="note">${esc(t("histAd"))}</p>
+  </div>`;
 }
 
 // ---------- compare with similar cars for sale (opens the search on the other site) ----------
