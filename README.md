@@ -30,7 +30,7 @@ Static site, no server, no build step for the app. Vehicle data comes live from
 **Tune the price model** → collect ads, paste them into `/calibrate.html`, copy the suggested `PARAMS` into `model.js`,
 then regenerate the model pages (below).
 
-**Regenerate model pages + sitemap** (takes ~80 s):
+**Regenerate model pages + sitemap** (takes ~4 min; includes the APK-defects sample per model):
 ```
 python tools/build_pages.py
 ```
@@ -49,5 +49,6 @@ Events: `kenteken-gezocht`, `kenteken-niet-gevonden`, `deal-check`, `voorbeeld-g
 
 - Value estimate = catalogue price × depreciation curve × brand/fuel/mileage adjustments. It is an estimate, not a valuation.
 - APK history uses RDW datasets `sgfe-77wx` (inspections), `a34c-vvps` (defects found) and `hx2c-gt7k` (defect texts). RDW only publishes inspections from June 2022. Codes AC/RA/OP are advisories.
+- Model pages: APK defects come from a sample of ~40 plates per model year (2012 to 4 years ago), refreshed monthly. Models with fewer than 120 inspected cars skip the section.
 - Road tax is calibrated on 2026 rates for an average province (Noord-Brabant, 87 opcenten). EVs pay 70% in 2026.
 - Fuel prices are constants in `model.js` (`FUEL_PRICE`); update roughly once a year.

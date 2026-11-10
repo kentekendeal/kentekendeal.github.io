@@ -99,3 +99,16 @@ details.faq p { margin: 0 0 12px; }
 footer { color: var(--muted); font-size: .82rem; text-align: center; padding: 8px 0 36px; }
 footer a { color: inherit; }
 footer nav { display: flex; gap: 16px; justify-content: center; flex-wrap: wrap; margin-bottom: 8px; }
+
+/* APK defects per model */
+.defects { list-style: none; padding: 0; margin: 14px 0 0; }
+.defects li { padding: 8px 0; border-bottom: 1px solid var(--line); }
+.defects li:last-child { border-bottom: 0; }
+.defects .row { display: flex; justify-content: space-between; gap: 12px; font-size: .93rem; }
+.defects .row b { font-variant-numeric: tabular-nums; white-space: nowrap; }
+.defects .track { height: 6px; background: var(--field); border-radius: 999px; margin-top: 6px; overflow: hidden; }
+.defects .track span { display: block; height: 100%; background: var(--bar, #2563eb); border-radius: 999px; }
+.defects .tag { font-size: .7rem; font-weight: 700; text-transform: uppercase; letter-spacing: .3px; border-radius: 6px; padding: 1px 6px;
+  margin-left: 6px; white-space: nowrap; color: var(--muted); border: 1px solid var(--line); }
+.defects .tag.hot { color: #b45309; border-color: #fcd34d; background: #fffbeb; }
+@media (prefers-color-scheme: dark) { .defects .tag.hot { color: #fcd34d; border-color: #78350f; background: #2a1a05; } }

@@ -13,6 +13,7 @@ import datetime as dt
 import html
 import json
 import math
+import random
 import re
 import statistics
 import time
@@ -150,6 +151,63 @@ def model_data(brand, name, variants):
     return years, colours, fuel_rows
 
 
+# ---------------------------------------------------------------- APK defects per model
+APK_PER_YEAR = 40          # plates sampled per model year (2 random chunks of 20)
+APK_MIN_CARS = 120         # fewer inspected cars than this → no APK section
+ADVICE = re.compile(r"^(AC|RA|OP)\d")   # advisories, not defects
+_defect_texts = None
+APK_AVG = {}
+
+
+def defect_texts():
+    global _defect_texts
+    if _defect_texts is None:
+        _defect_texts = {r["gebrek_identificatie"]: r.get("gebrek_omschrijving", "") for r in rdw("hx2c-gt7k", {"$limit": "5000"})}
+    return _defect_texts
+
+
+def apk_sample(brand, name, variants, years):
+    """Inspections + defects since June 2022 for a sample of cars old enough to have had an APK."""
+    rng = random.Random(f"{brand}|{name}|{TODAY:%Y-%m}")   # stable within a month
+    base = f"voertuigsoort='Personenauto' AND merk={soql_str(brand)} AND handelsbenaming in ({','.join(soql_str(v) for v in variants)})"
+    plates = []
+    for r in years:
+        y, n = int(r["y"]), int(r["n"])
+        if y < FROM_YEAR or y > NOW_YEAR - 4 or n < 60: continue
+        where = base + f" AND datum_eerste_toelating_dt between '{y}-01-01T00:00:00' and '{y}-12-31T23:59:59'"
+        for off in sorted(rng.sample(range(0, n - 20), 2)):
+            plates += [x["kenteken"] for x in rdw("m9d7-ebf2", {"$select": "kenteken", "$where": where, "$order": "kenteken",
+                                                                 "$limit": "20", "$offset": str(off)})]
+    plates = sorted(set(plates))
+    checks, found = [], []
+    for i in range(0, len(plates), 150):
+        inn = f"kenteken in ({','.join(soql_str(p) for p in plates[i:i + 150])})"
+        checks += rdw("sgfe-77wx", {"$select": "kenteken,meld_datum_door_keuringsinstantie",
+                                    "$where": inn + " AND soort_melding_ki_omschrijving='periodieke controle'", "$limit": "5000"})
+        found += rdw("a34c-vvps", {"$select": "kenteken,meld_datum_door_keuringsinstantie,gebrek_identificatie,aantal_gebreken_geconstateerd",
+                                   "$where": inn, "$limit": "20000"})
+    return checks, found
+
+
+def apk_stats(checks, found):
+    inspections = {(c["kenteken"], c["meld_datum_door_keuringsinstantie"]) for c in checks}
+    inspections |= {(g["kenteken"], g["meld_datum_door_keuringsinstantie"]) for g in found}
+    cars = {k for k, _ in inspections}
+    if len(cars) < APK_MIN_CARS: return None
+    with_defect = set()
+    per_code = defaultdict(set)          # code -> plates where it was found at least once
+    n_defects = 0
+    for g in found:
+        code = g.get("gebrek_identificatie") or ""
+        per_code[code].add(g["kenteken"])
+        if not ADVICE.match(code):
+            with_defect.add((g["kenteken"], g["meld_datum_door_keuringsinstantie"]))
+            n_defects += int(g.get("aantal_gebreken_geconstateerd") or 1)
+    return {"cars": len(cars), "inspections": len(inspections),
+            "clean": 1 - len(with_defect) / len(inspections), "per_inspection": n_defects / len(inspections),
+            "codes": {c: len(p) / len(cars) for c, p in per_code.items()}}
+
+
 def classify_fuel(fuel_rows):
     """Fuel mix from a sample of recent plates + average WLTP use per type."""
     per = defaultdict(list)
@@ -262,6 +320,55 @@ def bar_chart(points):
             + "".join(out) + "</svg>")
 
 
+def pct(x): return f"{round(x * 100)}%"
+
+
+def apk_section(full, apk):
+    """Returns (html, faq_answer) for the APK block, or ("", None) without enough data."""
+    if not apk: return "", None
+    texts, avg = defect_texts(), APK_AVG.get("codes", {})
+    label = lambda c: texts.get(c) or f"Gebrekcode {c}"
+    top = [(c, s) for c, s in sorted(apk["codes"].items(), key=lambda kv: -kv[1]) if s >= 0.02][:8]
+    if len(top) < 3: return "", None
+    lift = lambda c: apk["codes"][c] / avg[c] if avg.get(c) else 1
+    hot = {c for c, s in apk["codes"].items() if s >= 0.03 and lift(c) >= 1.6}
+    peak = top[0][1]
+    items = "".join(
+        f'<li><div class="row"><span>{esc(label(c))}'
+        + (' <span class="tag">advies</span>' if ADVICE.match(c) else "")
+        + (f' <span class="tag hot">{lift(c):.1f}× vaker dan gemiddeld</span>'.replace(".", ",") if c in hot else "")
+        + f'</span><b>{pct(s)}</b></div><div class="track"><span style="width:{s / peak * 100:.0f}%"></span></div></li>'
+        for c, s in top)
+    extra = sorted((c for c in hot if c not in dict(top)), key=lambda c: -lift(c))[:3]
+    extra_html = ("<p><b>Ook opvallend vaak bij de " + esc(full) + ":</b> "
+                  + "; ".join(f"{esc(label(c).lower())} ({pct(apk['codes'][c])}, {lift(c):.1f}× het gemiddelde)".replace(".", ",") for c in extra)
+                  + ".</p>") if extra else ""
+    avg_clean, avg_per = APK_AVG.get("clean"), APK_AVG.get("per_inspection")
+    dec = lambda x: f"{x:.1f}".replace(".", ",")
+    html_ = f"""
+<section class="card">
+  <h2>Bekende APK-gebreken van de {esc(full)}</h2>
+  <p>Wat keurmeesters sinds juni 2022 het vaakst vonden bij de {esc(full)}. Percentage = deel van de gekeurde auto's waarbij het minstens één keer is gevonden.</p>
+  <div class="stats">
+    <div class="stat"><div class="l">Keuringen zonder gebreken</div><div class="v">{pct(apk['clean'])}</div></div>
+    <div class="stat"><div class="l">Gebreken per keuring</div><div class="v">{dec(apk['per_inspection'])}</div></div>
+    <div class="stat"><div class="l">Gekeurde auto's</div><div class="v">{nl_int(apk['cars'])}</div></div>
+  </div>
+  {f'<p class="note" style="margin-top:8px">Gemiddeld over alle populaire modellen: {pct(avg_clean)} zonder gebreken, {dec(avg_per)} gebreken per keuring. Oudere modellen scoren vanzelf slechter.</p>' if avg_clean else ''}
+  <ul class="defects">{items}</ul>
+  {extra_html}
+  <p class="note">Bron: RDW (APK-meldingen vanaf juni 2022), steekproef van {nl_int(apk['cars'])} auto's met bouwjaar {FROM_YEAR}–{NOW_YEAR - 4}, {nl_int(apk['inspections'])} keuringen.
+  Gevonden gebreken worden meestal direct gerepareerd. "Advies" is geen afkeur. Wil je de APK-geschiedenis van één auto zien? Vul hieronder het kenteken in.</p>
+</section>
+"""
+    names = [label(c).lower() for c, _ in top[:3]]
+    faq = (f"Bij de APK van de {full} vonden keurmeesters het vaakst: {names[0]} ({pct(top[0][1])} van de auto's), {names[1]} ({pct(top[1][1])}) "
+           f"en {names[2]} ({pct(top[2][1])}). {pct(apk['clean'])} van de keuringen was zonder gebreken"
+           + (f" (gemiddeld over alle populaire modellen: {pct(avg_clean)})." if avg_clean else ".")
+           + f" Gebaseerd op {nl_int(apk['inspections'])} keuringen sinds juni 2022 (RDW).")
+    return html_, faq
+
+
 def build_model_page(m, others):
     brand, name, years, colours, mix, use = m["brand"], m["name"], m["years"], m["colours"], m["mix"], m["use"]
     full = f"{brand_name(brand)} {model_name(name)}"
@@ -326,6 +433,8 @@ def build_model_page(m, others):
         (f"Welke brandstof heeft een {full}?",
          f"Bij recente bouwjaren zien we vooral: {fuel_txt}. Dit is gebaseerd op een steekproef uit het RDW-register."),
     ]
+    apk_html, apk_faq = apk_section(full, m.get("apk"))
+    if apk_faq: faq.insert(2, (f"Wat zijn veelvoorkomende APK-gebreken van de {full}?", apk_faq))
     faq_html = "".join(f'<details class="faq"{" open" if i == 0 else ""}><summary>{esc(q)}</summary><p>{esc(a)}</p></details>' for i, (q, a) in enumerate(faq))
 
     same_brand = [o for o in others if o["brand"] == brand and o is not m][:6]
@@ -365,6 +474,7 @@ def build_model_page(m, others):
   <p class="note">Exclusief verzekering en onderhoud. Lees ook: <a href="/gids/kosten-auto-per-maand/">wat kost een auto per maand?</a></p>
 </section>
 
+{apk_html}
 <section class="card">
   <h2>Brandstof en kleuren</h2>
   <p><b>Brandstof (recente bouwjaren):</b> {esc(fuel_txt)}.</p>
@@ -373,7 +483,7 @@ def build_model_page(m, others):
 
 <section class="card cta">
   <h2>Staat er een {esc(full)} te koop?</h2>
-  <p>Vul het kenteken en de vraagprijs in. Je ziet direct of het een goede deal is, wat de auto per maand kost en of er een terugroepactie openstaat.</p>
+  <p>Vul het kenteken en de vraagprijs in. Je ziet direct of het een goede deal is, wat de auto per maand kost, de APK-geschiedenis en of er een terugroepactie openstaat.</p>
   <form class="check" action="/" method="get">
     <div class="plate"><span class="nl">NL</span><input name="k" placeholder="XX-123-X" maxlength="10" aria-label="Kenteken" autocomplete="off"></div>
     <button>Check</button>
@@ -400,8 +510,8 @@ def build_model_page(m, others):
             {"@type": "Question", "name": q, "acceptedAnswer": {"@type": "Answer", "text": a}} for q, a in faq]},
     ]
     page = layout(
-        title=f"{full}: waarde per bouwjaar en kosten per maand ({NOW_YEAR}) | KentekenDeal",
-        description=f"Wat is een {full} waard? Geschatte waarde per bouwjaar, kosten per maand en meer, op basis van RDW-data. Check ook of een {full} te koop een goede deal is.",
+        title=f"{full}: waarde, kosten per maand en APK-gebreken ({NOW_YEAR}) | KentekenDeal",
+        description=f"Wat is een {full} waard? Geschatte waarde per bouwjaar, kosten per maand en de vaakst gevonden APK-gebreken, op basis van RDW-data. Check ook of een {full} te koop een goede deal is.",
         path=path, crumbs=[("Home", "/"), ("Auto's", "/auto/"), (full, None)],
         h1=f"{full}: wat is hij waard en wat kost hij?",
         lead=f"Geschatte waarde per bouwjaar en kosten per maand van de {esc(full)}, op basis van RDW-data. Heb je een kenteken? Check direct of de vraagprijs eerlijk is.",
@@ -446,11 +556,25 @@ def main():
     def fetch(m):
         years, colours, fuel_rows = model_data(m["brand"], m["name"], m["variants"])
         mix, use = classify_fuel(fuel_rows)
-        m.update(years=years, colours=colours, mix=mix, use=use)
+        try:
+            apk = apk_stats(*apk_sample(m["brand"], m["name"], m["variants"], years))
+        except Exception as e:   # APK data is a bonus; never fail the whole build on it
+            print(f"  APK data failed for {m['brand']} {m['name']}: {e}")
+            apk = None
+        m.update(years=years, colours=colours, mix=mix, use=use, apk=apk)
         return m
 
+    defect_texts()
     with cf.ThreadPoolExecutor(max_workers=6) as ex:
         list(ex.map(fetch, models))
+
+    # Averages over all models, to say whether a defect is typical for a model.
+    sampled = [m["apk"] for m in models if m["apk"]]
+    if sampled:
+        codes = {c for a in sampled for c in a["codes"]}
+        APK_AVG.update(clean=statistics.mean(a["clean"] for a in sampled),
+                       per_inspection=statistics.mean(a["per_inspection"] for a in sampled),
+                       codes={c: statistics.mean(a["codes"].get(c, 0) for a in sampled) for c in codes})
 
     # Pass 1 finds which models have enough data; pass 2 builds them, linking only to built pages.
     built = [m for m in models if build_model_page(m, models)]
