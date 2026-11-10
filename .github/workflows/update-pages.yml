@@ -1,4 +1,4 @@
-# Refreshes the model pages (/auto/) and sitemap.xml with the latest RDW data.
+# Refreshes the model pages (/auto/ and /en/cars/), /en/index.html and sitemap.xml with the latest RDW data.
 # Runs automatically on the 1st of every month, and can be started by hand under
 # GitHub → Actions → "Update model pages" → "Run workflow".
 name: Update model pages
@@ -35,7 +35,7 @@ jobs:
         run: |
           git config user.name "kentekendeal-bot"
           git config user.email "354666399+kentekendeal@users.noreply.github.com"
-          git add auto sitemap.xml
+          git add auto en sitemap.xml
           if git diff --cached --quiet; then
             echo "No changes."
             echo "changed=false" >> "$GITHUB_OUTPUT"
