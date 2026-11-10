@@ -169,7 +169,7 @@ def classify_fuel(fuel_rows):
         if k == "Elektrisch":
             v = next((r.get("elektrisch_verbruik_enkel_elektrisch_wltp") for r in rows if r.get("elektrisch_verbruik_enkel_elektrisch_wltp")), None)
         else:
-            v = main.get("brandstof_verbruik_gecombineerd_wltp")
+            v = main.get("brandstof_verbruik_gecombineerd_wltp") or main.get("brandstof_verbruik_gewogen_gecombineerd_wltp")
         try:
             if v and float(v) > 0: use[k].append(float(v))
         except ValueError:

@@ -20,7 +20,7 @@
   // A plate check (?k=...) is a personal lookup: don't let search engines index it.
   if (new URLSearchParams(location.search).has("k")) document.write('<meta name="robots" content="noindex">');
 </script>
-<script type="application/ld+json">{"@context":"https://schema.org","@type":"WebApplication","name":"KentekenDeal","url":"https://kentekendeal.github.io/","applicationCategory":"UtilitiesApplication","operatingSystem":"Web","inLanguage":"nl","description":"Vul een kenteken in en zie de RDW-gegevens, de geschatte waarde, of de vraagprijs eerlijk is en wat de auto per maand kost.","offers":{"@type":"Offer","price":"0","priceCurrency":"EUR"},"image":"https://kentekendeal.github.io/assets/og-image.png"}</script>
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"WebApplication","name":"KentekenDeal","url":"https://kentekendeal.github.io/","applicationCategory":"UtilitiesApplication","operatingSystem":"Web","inLanguage":["nl","en"],"description":"Vul een kenteken in en zie de RDW-gegevens, de geschatte waarde, of de vraagprijs eerlijk is en wat de auto per maand kost.","offers":{"@type":"Offer","price":"0","priceCurrency":"EUR"},"image":"https://kentekendeal.github.io/assets/og-image.png"}</script>
 <script type="application/ld+json">{"@context":"https://schema.org","@type":"Organization","name":"KentekenDeal","url":"https://kentekendeal.github.io/","logo":"https://kentekendeal.github.io/assets/icon-512.png"}</script>
 <!-- Visitor stats (GoatCounter, no cookies). Count only the path, never the plate in the URL. -->
 <script data-goatcounter="https://kentekendeal.goatcounter.com/count"
@@ -53,18 +53,18 @@
 
   /* ---------- header + hero ---------- */
   .hero { background: radial-gradient(circle at 90% -10%, #2a4fb0 0%, var(--navy) 55%); color: #fff; padding-bottom: 28px; }
-  .site-header { display: flex; align-items: center; justify-content: space-between; padding: 14px 0; }
+  .site-header { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 14px 0; }
   .brand { display: flex; align-items: center; gap: 10px; color: #fff; text-decoration: none;
     font-size: 1.35rem; letter-spacing: -0.5px; font-weight: 600; }
   .brand img { width: 36px; height: 36px; }
   .brand b { color: #4ADE80; font-weight: 800; }
-  .top-nav { display: flex; gap: 16px; font-size: .92rem; }
+  .top-nav { display: flex; gap: 14px; font-size: .92rem; align-items: center; }
   .top-nav a { color: #c7d2fe; text-decoration: none; }
   .top-nav a:hover { color: #fff; }
-  .pills { display: flex; flex-wrap: wrap; gap: 8px; }
-  .pill { border: 1px solid var(--line); background: var(--field); border-radius: 999px; padding: 5px 12px; font-size: .88rem; color: var(--text); text-decoration: none; }
-  .pill:hover { border-color: var(--accent); color: var(--accent); }
-  footer nav { display: flex; gap: 16px; justify-content: center; flex-wrap: wrap; margin-bottom: 8px; }
+  .lang { border: 1px solid rgba(255,255,255,.35); background: transparent; color: #fff; border-radius: 8px;
+    padding: 3px 9px; font: inherit; font-size: .8rem; font-weight: 700; cursor: pointer; letter-spacing: .5px; }
+  .lang:hover { background: rgba(255,255,255,.12); }
+  @media (max-width: 420px) { .top-nav a { display: none; } }
   .hero h1 { font-size: clamp(1.7rem, 6vw, 2.4rem); line-height: 1.1; letter-spacing: -1px; margin: 14px 0 8px; }
   .hero p.lead { color: #c7d2fe; margin: 0 0 20px; }
 
@@ -85,7 +85,7 @@
   .chips { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 14px; align-items: center; }
   .chips .label { color: #a5b4fc; font-size: .85rem; margin-right: 2px; }
   .chip { border: 1px solid rgba(255,255,255,.25); background: rgba(255,255,255,.08); color: #fff;
-    border-radius: 999px; padding: 5px 12px; font-size: .85rem; cursor: pointer; font: inherit; font-size: .85rem; }
+    border-radius: 999px; padding: 5px 12px; cursor: pointer; font: inherit; font-size: .85rem; }
   .chip:hover { background: rgba(255,255,255,.18); }
 
   /* ---------- content ---------- */
@@ -98,6 +98,9 @@
   .note { color: var(--muted); font-size: .82rem; margin: 10px 0 0; }
   .msg { color: var(--muted); text-align: center; padding: 24px 0; }
   .msg.error { color: var(--bad); }
+  .pills { display: flex; flex-wrap: wrap; gap: 8px; }
+  .pill { border: 1px solid var(--line); background: var(--field); border-radius: 999px; padding: 5px 12px; font-size: .88rem; color: var(--text); text-decoration: none; }
+  .pill:hover { border-color: var(--accent); color: var(--accent); }
 
   /* how it works */
   .steps { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
@@ -195,6 +198,7 @@
 
   footer { color: var(--muted); font-size: .8rem; text-align: center; padding: 8px 0 32px; }
   footer a { color: inherit; }
+  footer nav { display: flex; gap: 16px; justify-content: center; flex-wrap: wrap; margin-bottom: 8px; }
   @media (prefers-reduced-motion: reduce) { .meter .marker, .stack span { transition: none; } .skel { animation: none; } }
 </style>
 </head>
@@ -203,10 +207,13 @@
   <div class="wrap">
     <header class="site-header">
       <a class="brand" href="./" aria-label="KentekenDeal home"><img src="assets/logo-icon.svg" alt="">kenteken<b>deal</b></a>
-      <nav class="top-nav"><a href="/auto/">Auto's</a><a href="/gids/">Koopgids</a></nav>
+      <nav class="top-nav">
+        <a href="/auto/" data-i18n="navCars">Auto's</a><a href="/gids/" data-i18n="navGuide">Koopgids</a>
+        <button type="button" class="lang" id="lang" aria-label="Switch language">EN</button>
+      </nav>
     </header>
-    <h1>Is deze auto zijn prijs waard?</h1>
-    <p class="lead">Vul een kenteken in en zie direct wat de auto waard is, of de vraagprijs eerlijk is en wat hij per maand kost.</p>
+    <h1 data-i18n="heroTitle">Is deze auto zijn prijs waard?</h1>
+    <p class="lead" data-i18n="heroLead">Vul een kenteken in en zie direct wat de auto waard is, of de vraagprijs eerlijk is en wat hij per maand kost.</p>
     <form id="form" autocomplete="off">
       <div class="plate"><span class="nl">NL</span>
         <input id="plate" placeholder="XX-123-X" maxlength="10" aria-label="Kenteken" enterkeyhint="search">
@@ -222,11 +229,13 @@
 </main>
 
 <footer class="wrap">
-  <nav><a href="/auto/">Waarde per model</a><a href="/gids/">Koopgids</a><a href="/gids/tweedehands-auto-kopen-checklist/">Checklist tweedehands auto</a></nav>
-  Data: RDW Open Data. Waarde en kosten zijn schattingen, geen taxatie of officiële berekening.<br>
+  <nav><a href="/auto/" data-i18n="footerModels">Waarde per model</a><a href="/gids/" data-i18n="footerGuide">Koopgids</a>
+    <a href="/gids/tweedehands-auto-kopen-checklist/" data-i18n="footerChecklist">Checklist tweedehands auto</a></nav>
+  <span data-i18n="footerNote">Data: RDW Open Data. Waarde en kosten zijn schattingen, geen taxatie of officiële berekening.</span><br>
   © KentekenDeal
 </footer>
 
+<script src="i18n.js"></script>
 <script src="model.js"></script>
 <script>
 const $ = (id) => document.getElementById(id);
@@ -240,11 +249,31 @@ const EXAMPLES = [
   { k: "T780VD", km: 48032, p: 31250, label: "Skoda Karoq" },
   { k: "KTL87L", km: 75545, p: 21500, label: "Lynk & Co 01" },
 ];
+const POPULAR = [["volkswagen-polo","Volkswagen Polo"],["volkswagen-golf","Volkswagen Golf"],["kia-picanto","Kia Picanto"],["toyota-yaris","Toyota Yaris"],
+  ["renault-clio","Renault Clio"],["peugeot-208","Peugeot 208"],["tesla-model-3","Tesla Model 3"],["tesla-model-y","Tesla Model Y"],
+  ["kia-niro","Kia Niro"],["volvo-xc40","Volvo XC40"]];
 
 // ---------- analytics (only event names, never plates) ----------
 function track(name) {
   try { window.goatcounter?.count?.({ path: name, title: name, event: true }); } catch {}
 }
+
+// ---------- language ----------
+function applyStatic() {
+  document.documentElement.lang = LANG;
+  document.title = t("docTitle");
+  document.querySelectorAll("[data-i18n]").forEach(el => { el.textContent = t(el.dataset.i18n); });
+  $("plate").setAttribute("aria-label", t("plateLabel"));
+  $("lang").textContent = LANG === "en" ? "NL" : "EN";
+  $("lang").setAttribute("aria-label", LANG === "en" ? "Schakel naar Nederlands" : "Switch to English");
+}
+$("lang").addEventListener("click", () => {
+  setLang(LANG === "en" ? "nl" : "en");
+  track("taal-" + LANG);
+  applyStatic();
+  renderChips();
+  if (state) renderCar(); else if (!$("out").querySelector(".msg")) renderHome();
+});
 
 // ---------- recent searches (this browser only) ----------
 function getRecent() { try { return JSON.parse(localStorage.getItem("recent") || "[]"); } catch { return []; } }
@@ -258,10 +287,9 @@ function addRecent(car) {
 
 function renderChips() {
   const recent = getRecent();
-  const items = recent.length
-    ? `<span class="label">Recent:</span>` + recent.map(r => `<button type="button" class="chip" data-k="${esc(r.k)}">${esc(r.label)}</button>`).join("")
-    : `<span class="label">Probeer:</span>` + EXAMPLES.map((e, i) => `<button type="button" class="chip" data-ex="${i}">${esc(e.label)}</button>`).join("");
-  $("chips").innerHTML = items;
+  $("chips").innerHTML = recent.length
+    ? `<span class="label">${esc(t("recentLabel"))}</span>` + recent.map(r => `<button type="button" class="chip" data-k="${esc(r.k)}">${esc(r.label)}</button>`).join("")
+    : `<span class="label">${esc(t("tryLabel"))}</span>` + EXAMPLES.map((e, i) => `<button type="button" class="chip" data-ex="${i}">${esc(e.label)}</button>`).join("");
 }
 $("chips").addEventListener("click", (e) => {
   const b = e.target.closest(".chip"); if (!b) return;
@@ -307,8 +335,8 @@ function carSvg(car) {
 const hp = (kw) => Math.round(kw * 1.36);
 function powerText(fx) {
   if (!fx.kw && !fx.kwElec) return null;
-  if (fx.kwElec && fx.kw) return `${hp(fx.kw)} pk + ${hp(fx.kwElec)} pk elektrisch`;
-  return `${hp(fx.kw || fx.kwElec)} pk`;
+  if (fx.kwElec && fx.kw) return `${hp(fx.kw)} ${t("hp")} + ${hp(fx.kwElec)} ${t("hpElectric")}`;
+  return `${hp(fx.kw || fx.kwElec)} ${t("hp")}`;
 }
 
 // Meter scale: asking price from 50% to 150% of our estimate.
@@ -319,28 +347,24 @@ const ratioToPct = (r) => Math.min(100, Math.max(0, (r - 0.5) / 1.0 * 100));
 function renderHome() {
   $("out").innerHTML = `
     <div class="card">
-      <h2>Zo werkt het</h2>
+      <h2>${esc(t("howTitle"))}</h2>
       <div class="steps">
-        <div class="step"><div class="n">1</div><b>Vul het kenteken in</b><span>We halen alle gegevens op bij de RDW.</span></div>
-        <div class="step"><div class="n">2</div><b>Vul de vraagprijs in</b><span>Uit de advertentie, plus de kilometerstand.</span></div>
-        <div class="step"><div class="n">3</div><b>Zie of het een deal is</b><span>Van koopje tot te duur, plus de kosten per maand.</span></div>
+        ${[1, 2, 3].map(n => `<div class="step"><div class="n">${n}</div><b>${esc(t(`step${n}T`))}</b><span>${esc(t(`step${n}D`))}</span></div>`).join("")}
       </div>
     </div>
     <div class="card">
-      <h2>Populaire modellen</h2>
+      <h2>${esc(t("popularTitle"))}</h2>
       <div class="pills">
-        ${[["volkswagen-polo","Volkswagen Polo"],["volkswagen-golf","Volkswagen Golf"],["kia-picanto","Kia Picanto"],["toyota-yaris","Toyota Yaris"],
-           ["renault-clio","Renault Clio"],["peugeot-208","Peugeot 208"],["tesla-model-3","Tesla Model 3"],["tesla-model-y","Tesla Model Y"],
-           ["kia-niro","Kia Niro"],["volvo-xc40","Volvo XC40"]].map(([s, n]) => `<a class="pill" href="/auto/${s}/">${n}</a>`).join("")}
-        <a class="pill" href="/auto/">Alle modellen →</a>
+        ${POPULAR.map(([s, n]) => `<a class="pill" href="/auto/${s}/">${n}</a>`).join("")}
+        <a class="pill" href="/auto/">${esc(t("allModels"))}</a>
       </div>
     </div>
     <div class="card">
-      <h2>Koopgids</h2>
+      <h2>${esc(t("guideTitle"))}</h2>
       <div class="pills">
-        <a class="pill" href="/gids/tweedehands-auto-kopen-checklist/">Checklist tweedehands auto kopen</a>
-        <a class="pill" href="/gids/importauto-kopen/">Importauto kopen</a>
-        <a class="pill" href="/gids/kosten-auto-per-maand/">Wat kost een auto per maand?</a>
+        <a class="pill" href="/gids/tweedehands-auto-kopen-checklist/">${esc(t("guideChecklist"))}</a>
+        <a class="pill" href="/gids/importauto-kopen/">${esc(t("guideImport"))}</a>
+        <a class="pill" href="/gids/kosten-auto-per-maand/">${esc(t("guideCosts"))}</a>
       </div>
     </div>`;
 }
@@ -364,16 +388,17 @@ function renderAll() {
       markerHtml = `<div class="marker" id="marker" style="left:${lastMarker}%"><span class="tag">${euro(asking)}</span><span class="pin"></span></div>`;
       verdictHtml = `<div class="verdict ${cls}"><p class="big">${esc(title)}</p><p>${esc(text)}</p></div>`;
     }
+    const age = v.age.toLocaleString(LOCALE(), { maximumFractionDigits: 1, minimumFractionDigits: 1 });
     html += `
-      <div class="value-range"><div class="l">Je koopt deze auto ongeveer voor</div><div class="v">${euro(v.low)} – ${euro(v.high)}</div></div>
+      <div class="value-range"><div class="l">${esc(t("valueLabel"))}</div><div class="v">${euro(v.low)} – ${euro(v.high)}</div></div>
       <div class="meter">
         ${markerHtml}
         <div class="bar">${ZONES.map(([a, b, c]) => `<span style="width:${(b - a) * 100}%;background:${c}"></span>`).join("")}</div>
-        <div class="labels"><span style="left:0">Te goedkoop?</span><span style="left:24%">Koopje</span><span style="left:49%">Eerlijk</span><span style="left:70%">Prijzig</span><span style="left:100%">Te duur</span></div>
+        <div class="labels"><span style="left:0">${esc(t("mTooCheap"))}</span><span style="left:24%">${esc(t("mBargain"))}</span><span style="left:49%">${esc(t("mFair"))}</span><span style="left:70%">${esc(t("mPricey"))}</span><span style="left:100%">${esc(t("mTooExp"))}</span></div>
       </div>
-      ${verdictHtml || `<div class="hint">Vul de <b>vraagprijs</b> in om te zien of het een goede deal is.</div>`}
-      <p class="note">Nieuwprijs ${euro(v.price)} · ${v.age.toFixed(1)} jaar oud${v.notes.length ? " · " + esc(v.notes.join(", ")) : ""}.
-        ${v.withKm ? "Staat en opties zijn niet meegenomen." : "Met de kilometerstand wordt de schatting scherper."}</p>`;
+      ${verdictHtml || `<div class="hint">${t("askHint")}</div>`}
+      <p class="note">${esc(t("valueNote", { price: euro(v.price), age }))}${v.notes.length ? " · " + esc(v.notes.join(", ")) : ""}.
+        ${esc(v.withKm ? t("noteWithKm") : t("noteNoKm"))}</p>`;
   } else {
     html += `<p class="note">${esc(v.reason)}</p>`;
   }
@@ -395,17 +420,18 @@ function renderAll() {
     if (next.ok) dep = Math.max(0, (v.mid - next.mid) / 12);
   }
   const rows = [];
-  if (tax) rows.push(["Wegenbelasting", tax.note || "schatting gemiddelde provincie", tax.amount, "var(--c-tax)"]);
-  if (fuelCost) rows.push([fx.isEV ? "Stroom" : "Brandstof", fuelCost.use, fuelCost.amount, "var(--c-fuel)"]);
-  if (dep != null) rows.push(["Waardeverlies", "wat de auto per maand minder waard wordt", dep, "var(--c-dep)"]);
+  if (tax) rows.push([t("costTax"), tax.note || t("costTaxSub"), tax.amount, "var(--c-tax)"]);
+  if (fuelCost) rows.push([fx.isEV ? t("costPower") : t("costFuel"), fuelCost.use, fuelCost.amount, "var(--c-fuel)"]);
+  if (dep != null) rows.push([t("costDep"), t("costDepSub"), dep, "var(--c-dep)"]);
   const total = rows.reduce((s, r) => s + r[2], 0);
+  const price = (n) => n.toLocaleString(LOCALE(), { minimumFractionDigits: 2, maximumFractionDigits: 2 });
   $("costOut").innerHTML = rows.length ? `
-    <div class="cost-total"><span class="v">${euro(total)}</span><span class="l">per maand</span></div>
+    <div class="cost-total"><span class="v">${euro(total)}</span><span class="l">${esc(t("perMonth"))}</span></div>
     <div class="stack">${rows.map(r => `<span style="width:${total ? r[2] / total * 100 : 0}%;background:${r[3]}"></span>`).join("")}</div>
     ${rows.map(([n, sub, a, c]) => `<div class="cost-row"><span class="dot" style="background:${c}"></span>
       <span class="name">${esc(n)}<small>${esc(sub)}</small></span><span class="amt">${euro(a)}</span></div>`).join("")}
-    <p class="note">Exclusief verzekering en onderhoud. Brandstof: benzine € ${FUEL_PRICE.benzine.toFixed(2)}, diesel € ${FUEL_PRICE.diesel.toFixed(2)}, stroom € ${FUEL_PRICE.elektriciteit.toFixed(2)}/kWh.</p>`
-    : `<p class="note">Voor dit voertuig kunnen we geen kosten berekenen.</p>`;
+    <p class="note">${esc(t("costsNote", { b: price(FUEL_PRICE.benzine), d: price(FUEL_PRICE.diesel), e: price(FUEL_PRICE.elektriciteit) }))}</p>`
+    : `<p class="note">${esc(t("noCosts"))}</p>`;
 }
 
 function renderCar() {
@@ -418,54 +444,56 @@ function renderCar() {
   const badges = [];
   if (apk) {
     const days = (apk - Date.now()) / 864e5;
-    badges.push(days < 0 ? ["bad", "APK verlopen"] : days < 60 ? ["warn", "APK verloopt binnenkort"] : ["good", "APK geldig"]);
+    badges.push(days < 0 ? ["bad", t("badgeApkExpired")] : days < 60 ? ["warn", t("badgeApkSoon")] : ["good", t("badgeApkOk")]);
   }
-  if (car.tellerstandoordeel) badges.push(/onlogisch/i.test(car.tellerstandoordeel) ? ["bad", "Km-stand onlogisch"] : ["good", "Km-stand logisch"]);
-  if (car.openstaande_terugroepactie_indicator === "Ja") badges.push(["warn", "Openstaande terugroepactie"]);
-  if (car.wam_verzekerd === "Nee") badges.push(["warn", "Niet verzekerd (normaal bij dealervoorraad)"]);
-  if (car.export_indicator === "Ja") badges.push(["warn", "Gemeld voor export"]);
-  if (fx.first && firstNL && firstNL - fx.first > 180 * 864e5) badges.push(["warn", "Geïmporteerd"]);
+  if (car.tellerstandoordeel) badges.push(/onlogisch/i.test(car.tellerstandoordeel) ? ["bad", t("badgeKmBad")] : ["good", t("badgeKmOk")]);
+  if (car.openstaande_terugroepactie_indicator === "Ja") badges.push(["warn", t("badgeRecall")]);
+  if (car.wam_verzekerd === "Nee") badges.push(["warn", t("badgeUninsured")]);
+  if (car.export_indicator === "Ja") badges.push(["warn", t("badgeExport")]);
+  if (fx.first && firstNL && firstNL - fx.first > 180 * 864e5) badges.push(["warn", t("badgeImport")]);
 
   const f = fx.isEV ? fx.f : fx.main;
-  const kg = (n) => n ? `${(+n).toLocaleString("nl-NL")} kg` : null;
-  const cm = (n) => n ? `${(+n / 100).toFixed(2).replace(".", ",")} m` : null;
+  const kg = (n) => n ? `${(+n).toLocaleString(LOCALE())} kg` : null;
+  const m = (n) => n ? `${(+n / 100).toLocaleString(LOCALE(), { minimumFractionDigits: 2, maximumFractionDigits: 2 })} m` : null;
+  const dec1 = (n) => (+n).toLocaleString(LOCALE(), { minimumFractionDigits: 1, maximumFractionDigits: 1 });
+  const body = car.inrichting ? rdwText(car.inrichting) : "";
   const groups = [
-    ["Motor & verbruik", [
-      ["Brandstof", fx.fuelLabel],
-      ["Vermogen", powerText(fx)],
-      ["Motorinhoud", car.cilinderinhoud ? `${car.cilinderinhoud} cc` : null],
-      ["Cilinders", car.aantal_cilinders],
-      ["Verbruik (WLTP)", f.brandstof_verbruik_gecombineerd_wltp ? `${(+f.brandstof_verbruik_gecombineerd_wltp).toFixed(1)} l/100 km` : null],
-      ["Stroomverbruik (WLTP)", fx.elec?.elektrisch_verbruik_enkel_elektrisch_wltp ? `${Math.round(fx.elec.elektrisch_verbruik_enkel_elektrisch_wltp / 10)} kWh/100 km` : null],
-      ["Elektrische actieradius", fx.elec?.actie_radius_enkel_elektrisch_wltp ? `${fx.elec.actie_radius_enkel_elektrisch_wltp} km` : null],
-      ["CO₂ (WLTP)", f.emissie_co2_gecombineerd_wltp ? `${f.emissie_co2_gecombineerd_wltp} g/km` : null],
-      ["Emissieklasse", f.uitlaatemissieniveau],
-      ["Topsnelheid", car.maximale_constructiesnelheid ? `${car.maximale_constructiesnelheid} km/u` : null],
+    [t("gEngine"), [
+      [t("sFuel"), fx.fuelLabel],
+      [t("sPower"), powerText(fx)],
+      [t("sCc"), car.cilinderinhoud ? `${car.cilinderinhoud} cc` : null],
+      [t("sCyl"), car.aantal_cilinders],
+      [t("sUse"), f.brandstof_verbruik_gecombineerd_wltp ? `${dec1(f.brandstof_verbruik_gecombineerd_wltp)} l/100 km` : null],
+      [t("sEUse"), fx.elec?.elektrisch_verbruik_enkel_elektrisch_wltp ? `${Math.round(fx.elec.elektrisch_verbruik_enkel_elektrisch_wltp / 10)} kWh/100 km` : null],
+      [t("sRange"), fx.elec?.actie_radius_enkel_elektrisch_wltp ? `${fx.elec.actie_radius_enkel_elektrisch_wltp} km` : null],
+      [t("sCo2"), f.emissie_co2_gecombineerd_wltp ? `${f.emissie_co2_gecombineerd_wltp} g/km` : null],
+      [t("sEuro"), f.uitlaatemissieniveau],
+      [t("sTop"), car.maximale_constructiesnelheid ? `${car.maximale_constructiesnelheid} ${t("kmh")}` : null],
     ]],
-    ["Afmetingen & gewicht", [
-      ["Carrosserie", car.inrichting ? cap(car.inrichting) : null],
-      ["Deuren / zitplaatsen", car.aantal_deuren || car.aantal_zitplaatsen ? `${car.aantal_deuren || "–"} / ${car.aantal_zitplaatsen || "–"}` : null],
-      ["Lengte × breedte × hoogte", car.lengte && car.breedte && car.hoogte_voertuig ? `${cm(car.lengte)} × ${cm(car.breedte)} × ${cm(car.hoogte_voertuig)}` : null],
-      ["Leeggewicht", kg(car.massa_ledig_voertuig)],
-      ["Max. trekgewicht geremd", kg(car.maximum_trekken_massa_geremd)],
-      ["Max. trekgewicht ongeremd", kg(car.maximum_massa_trekken_ongeremd)],
+    [t("gSize"), [
+      [t("sBody"), body || null],
+      [t("sDoors"), car.aantal_deuren || car.aantal_zitplaatsen ? `${car.aantal_deuren || "–"} / ${car.aantal_zitplaatsen || "–"}` : null],
+      [t("sDims"), car.lengte && car.breedte && car.hoogte_voertuig ? `${m(car.lengte)} × ${m(car.breedte)} × ${m(car.hoogte_voertuig)}` : null],
+      [t("sMass"), kg(car.massa_ledig_voertuig)],
+      [t("sTowB"), kg(car.maximum_trekken_massa_geremd)],
+      [t("sTowU"), kg(car.maximum_massa_trekken_ongeremd)],
     ]],
-    ["Registratie", [
-      ["Kenteken", car.kenteken],
-      ["Eerste toelating", fmtDate(fx.first)],
-      ["Eerste keer op NL kenteken", fmtDate(firstNL)],
-      ["APK tot", fmtDate(apk)],
-      ["Kleur", known(car.eerste_kleur) ? cap(car.eerste_kleur) : null],
-      ["Nieuwprijs (catalogus)", car.catalogusprijs ? euro(+car.catalogusprijs) : null],
-      ["Zuinigheidslabel", car.zuinigheidsclassificatie],
+    [t("gReg"), [
+      [t("sPlate"), car.kenteken],
+      [t("sFirst"), fmtDate(fx.first)],
+      [t("sFirstNL"), fmtDate(firstNL)],
+      [t("sApk"), fmtDate(apk)],
+      [t("sColour"), known(car.eerste_kleur) ? rdwText(car.eerste_kleur) : null],
+      [t("sPrice"), car.catalogusprijs ? euro(+car.catalogusprijs) : null],
+      [t("sLabel"), car.zuinigheidsclassificatie],
     ]],
-  ].map(([t, rows]) => [t, rows.filter(([, val]) => val)]).filter(([, rows]) => rows.length);
+  ].map(([title, rows]) => [title, rows.filter(([, val]) => val)]).filter(([, rows]) => rows.length);
 
   const tiles = [
-    ["Bouwjaar", year],
-    ["Vermogen", fx.kw ? `${hp(fx.kw)} pk` + (fx.kwElec ? " + E" : "") : "–"],
-    ["Brandstof", fx.isEV ? "Elektrisch" : fx.isPHEV ? "Plug-in" : fx.isHybrid ? "Hybride" : cap(fx.fuelType) || "–"],
-    ["APK tot", apk ? apk.toLocaleDateString("nl-NL", { month: "short", year: "numeric" }) : "–"],
+    [t("tileYear"), year],
+    [t("tilePower"), fx.kw ? `${hp(fx.kw)} ${t("hp")}` + (fx.kwElec ? " + E" : "") : "–"],
+    [t("tileFuel"), fx.isEV ? t("fElectric") : fx.isPHEV ? t("fPluginShort") : fx.isHybrid ? t("fHybridShort") : fx.fuelName || "–"],
+    [t("tileApk"), apk ? apk.toLocaleDateString(LOCALE(), { month: "short", year: "numeric" }) : "–"],
   ];
 
   $("out").innerHTML = `
@@ -473,31 +501,31 @@ function renderCar() {
       <div class="car-head">
         ${carSvg(car)}
         <div><p class="car-title">${esc(carName(car))}</p>
-          <p class="car-sub">${esc([year, fx.fuelLabel, car.inrichting ? cap(car.inrichting) : ""].filter(Boolean).join(" · "))}</p></div>
+          <p class="car-sub">${esc([year, fx.fuelLabel, body].filter(Boolean).join(" · "))}</p></div>
       </div>
       <div class="tiles">${tiles.map(([l, val]) => `<div class="tile"><div class="l">${esc(l)}</div><div class="v">${esc(val)}</div></div>`).join("")}</div>
-      <div class="badges">${badges.map(([c, t]) => `<span class="badge ${c}">${esc(t)}</span>`).join("")}</div>
-      <div class="actions"><button type="button" class="link-btn" id="share">${ICON.share} Deel deze check</button></div>
+      <div class="badges">${badges.map(([c, txt]) => `<span class="badge ${c}">${esc(txt)}</span>`).join("")}</div>
+      <div class="actions"><button type="button" class="link-btn" id="share">${ICON.share} ${esc(t("share"))}</button></div>
     </div>
 
     <div class="card">
-      <h2>${ICON.euro} Waarde & deal-check</h2>
+      <h2>${ICON.euro} ${esc(t("dealTitle"))}</h2>
       <div class="inputs">
-        <label>Vraagprijs (€)<input id="ask" inputmode="numeric" placeholder="bijv. 8500"></label>
-        <label>Kilometerstand<input id="km" inputmode="numeric" placeholder="bijv. 85000"></label>
+        <label>${esc(t("askLabel"))}<input id="ask" inputmode="numeric" placeholder="${esc(t("egAsk"))}"></label>
+        <label>${esc(t("kmLabel"))}<input id="km" inputmode="numeric" placeholder="${esc(t("egKm"))}"></label>
       </div>
       <div id="valueOut"></div>
     </div>
 
     <div class="card">
-      <h2>${ICON.wallet} Kosten per maand</h2>
+      <h2>${ICON.wallet} ${esc(t("costsTitle"))}</h2>
       <div id="costOut"></div>
-      <label class="inline-input">Jouw km per jaar <input id="kmy" inputmode="numeric" placeholder="12000"></label>
+      <label class="inline-input">${esc(t("kmYearLabel"))} <input id="kmy" inputmode="numeric" placeholder="12000"></label>
     </div>
 
     <div class="card">
-      <h2>${ICON.list} Specificaties</h2>
-      ${groups.map(([t, rows], i) => `<details ${i === 0 ? "open" : ""}><summary>${esc(t)}</summary>
+      <h2>${ICON.list} ${esc(t("specsTitle"))}</h2>
+      ${groups.map(([title, rows], i) => `<details ${i === 0 ? "open" : ""}><summary>${esc(title)}</summary>
         <dl>${rows.map(([k, val]) => `<dt>${esc(k)}</dt><dd>${esc(val)}</dd>`).join("")}</dl></details>`).join("")}
     </div>`;
 
@@ -521,13 +549,15 @@ function updateLink() {
 }
 
 async function share() {
-  const url = location.href;
-  const title = `${carName(state.car)}: is dit een goede deal?`;
+  // Shared links open in the sharer's language.
+  const url = new URL(location.href);
+  if (LANG === "en") url.searchParams.set("lang", "en"); else url.searchParams.delete("lang");
+  const title = t("shareTitle", { car: carName(state.car) });
   track("gedeeld");
   try {
-    if (navigator.share) { await navigator.share({ title, url }); return; }
-    await navigator.clipboard.writeText(url);
-    $("share").textContent = "Link gekopieerd ✓";
+    if (navigator.share) { await navigator.share({ title, url: url.toString() }); return; }
+    await navigator.clipboard.writeText(url.toString());
+    $("share").textContent = t("shareCopied");
   } catch { /* user cancelled */ }
 }
 
@@ -541,7 +571,8 @@ function renderLoading() {
 async function search(raw) {
   const plate = clean(raw);
   if (plate.length < 4) {
-    $("out").innerHTML = `<div class="card"><p class="msg error">Vul een geldig kenteken in.</p></div>`;
+    state = null;
+    $("out").innerHTML = `<div class="card"><p class="msg error">${esc(t("invalidPlate"))}</p></div>`;
     return;
   }
   $("go").disabled = true;
@@ -550,9 +581,10 @@ async function search(raw) {
   try {
     const { car, fuel } = await lookup(plate);
     if (!car) {
+      state = null;
       track("kenteken-niet-gevonden");
-      $("out").innerHTML = `<div class="card"><p class="msg error">Geen voertuig gevonden met kenteken ${esc(plate)}.<br>
-        <small>Controleer het kenteken. Buitenlandse kentekens kunnen we niet opzoeken.</small></p></div>`;
+      $("out").innerHTML = `<div class="card"><p class="msg error">${esc(t("notFound", { plate }))}<br>
+        <small>${esc(t("notFoundHint"))}</small></p></div>`;
       return;
     }
     if (clean(new URLSearchParams(location.search).get("k") || "") !== plate) history.replaceState(null, "", `?k=${plate}`);
@@ -563,7 +595,8 @@ async function search(raw) {
     renderChips();
     renderCar();
   } catch (err) {
-    $("out").innerHTML = `<div class="card"><p class="msg error">${esc(err.message || "Er ging iets mis.")}</p></div>`;
+    state = null;
+    $("out").innerHTML = `<div class="card"><p class="msg error">${esc(err.message || t("genericError"))}</p></div>`;
   } finally {
     $("go").disabled = false;
   }
@@ -571,6 +604,7 @@ async function search(raw) {
 
 $("form").addEventListener("submit", (e) => { e.preventDefault(); $("plate").blur(); search($("plate").value); });
 
+applyStatic();
 renderChips();
 const initial = new URLSearchParams(location.search).get("k");
 if (initial) { $("plate").value = initial; search(initial); }
