@@ -15,6 +15,13 @@
 <meta property="og:image" content="https://kentekendeal.github.io/assets/og-image.png">
 <meta property="og:url" content="https://kentekendeal.github.io/">
 <meta name="twitter:card" content="summary_large_image">
+<link rel="canonical" href="https://kentekendeal.github.io/">
+<script>
+  // A plate check (?k=...) is a personal lookup: don't let search engines index it.
+  if (new URLSearchParams(location.search).has("k")) document.write('<meta name="robots" content="noindex">');
+</script>
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"WebApplication","name":"KentekenDeal","url":"https://kentekendeal.github.io/","applicationCategory":"UtilitiesApplication","operatingSystem":"Web","inLanguage":"nl","description":"Vul een kenteken in en zie de RDW-gegevens, de geschatte waarde, of de vraagprijs eerlijk is en wat de auto per maand kost.","offers":{"@type":"Offer","price":"0","priceCurrency":"EUR"},"image":"https://kentekendeal.github.io/assets/og-image.png"}</script>
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"Organization","name":"KentekenDeal","url":"https://kentekendeal.github.io/","logo":"https://kentekendeal.github.io/assets/icon-512.png"}</script>
 <!-- Visitor stats (GoatCounter, no cookies). Count only the path, never the plate in the URL. -->
 <script data-goatcounter="https://kentekendeal.goatcounter.com/count"
         data-goatcounter-settings='{"no_onload": true}'
@@ -51,6 +58,13 @@
     font-size: 1.35rem; letter-spacing: -0.5px; font-weight: 600; }
   .brand img { width: 36px; height: 36px; }
   .brand b { color: #4ADE80; font-weight: 800; }
+  .top-nav { display: flex; gap: 16px; font-size: .92rem; }
+  .top-nav a { color: #c7d2fe; text-decoration: none; }
+  .top-nav a:hover { color: #fff; }
+  .pills { display: flex; flex-wrap: wrap; gap: 8px; }
+  .pill { border: 1px solid var(--line); background: var(--field); border-radius: 999px; padding: 5px 12px; font-size: .88rem; color: var(--text); text-decoration: none; }
+  .pill:hover { border-color: var(--accent); color: var(--accent); }
+  footer nav { display: flex; gap: 16px; justify-content: center; flex-wrap: wrap; margin-bottom: 8px; }
   .hero h1 { font-size: clamp(1.7rem, 6vw, 2.4rem); line-height: 1.1; letter-spacing: -1px; margin: 14px 0 8px; }
   .hero p.lead { color: #c7d2fe; margin: 0 0 20px; }
 
@@ -189,6 +203,7 @@
   <div class="wrap">
     <header class="site-header">
       <a class="brand" href="./" aria-label="KentekenDeal home"><img src="assets/logo-icon.svg" alt="">kenteken<b>deal</b></a>
+      <nav class="top-nav"><a href="/auto/">Auto's</a><a href="/gids/">Koopgids</a></nav>
     </header>
     <h1>Is deze auto zijn prijs waard?</h1>
     <p class="lead">Vul een kenteken in en zie direct wat de auto waard is, of de vraagprijs eerlijk is en wat hij per maand kost.</p>
@@ -207,6 +222,7 @@
 </main>
 
 <footer class="wrap">
+  <nav><a href="/auto/">Waarde per model</a><a href="/gids/">Koopgids</a><a href="/gids/tweedehands-auto-kopen-checklist/">Checklist tweedehands auto</a></nav>
   Data: RDW Open Data. Waarde en kosten zijn schattingen, geen taxatie of officiële berekening.<br>
   © KentekenDeal
 </footer>
@@ -308,6 +324,23 @@ function renderHome() {
         <div class="step"><div class="n">1</div><b>Vul het kenteken in</b><span>We halen alle gegevens op bij de RDW.</span></div>
         <div class="step"><div class="n">2</div><b>Vul de vraagprijs in</b><span>Uit de advertentie, plus de kilometerstand.</span></div>
         <div class="step"><div class="n">3</div><b>Zie of het een deal is</b><span>Van koopje tot te duur, plus de kosten per maand.</span></div>
+      </div>
+    </div>
+    <div class="card">
+      <h2>Populaire modellen</h2>
+      <div class="pills">
+        ${[["volkswagen-polo","Volkswagen Polo"],["volkswagen-golf","Volkswagen Golf"],["kia-picanto","Kia Picanto"],["toyota-yaris","Toyota Yaris"],
+           ["renault-clio","Renault Clio"],["peugeot-208","Peugeot 208"],["tesla-model-3","Tesla Model 3"],["tesla-model-y","Tesla Model Y"],
+           ["kia-niro","Kia Niro"],["volvo-xc40","Volvo XC40"]].map(([s, n]) => `<a class="pill" href="/auto/${s}/">${n}</a>`).join("")}
+        <a class="pill" href="/auto/">Alle modellen →</a>
+      </div>
+    </div>
+    <div class="card">
+      <h2>Koopgids</h2>
+      <div class="pills">
+        <a class="pill" href="/gids/tweedehands-auto-kopen-checklist/">Checklist tweedehands auto kopen</a>
+        <a class="pill" href="/gids/importauto-kopen/">Importauto kopen</a>
+        <a class="pill" href="/gids/kosten-auto-per-maand/">Wat kost een auto per maand?</a>
       </div>
     </div>`;
 }

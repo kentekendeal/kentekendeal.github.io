@@ -1,0 +1,101 @@
+/* KentekenDeal: shared styles for content pages (model pages, guides). The app (index.html) has its own inline styles. */
+:root {
+  --navy: #0E1B3D; --yellow: #F7C600; --plate-blue: #1B3D8F; --green: #16A34A;
+  --bg: #f3f5f9; --card: #ffffff; --text: #111827; --muted: #6b7280; --line: #e5e7eb; --field: #f9fafb;
+  --accent: #1d4ed8; --shadow: 0 1px 2px rgba(16,24,40,.06), 0 4px 16px rgba(16,24,40,.06);
+  --bar: #2563eb; --bar-2: #93c5fd;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0b0f17; --card: #141a24; --text: #e5e7eb; --muted: #9ca3af; --line: #252d3a; --field: #0f141d;
+    --accent: #93c5fd; --shadow: 0 1px 2px rgba(0,0,0,.4); --bar: #60a5fa; --bar-2: #1e3a8a;
+  }
+}
+* { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body { margin: 0; background: var(--bg); color: var(--text); font: 17px/1.65 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+a { color: var(--accent); }
+.wrap { max-width: 760px; margin: 0 auto; padding: 0 16px; }
+
+/* header */
+.top { background: radial-gradient(circle at 90% -20%, #2a4fb0 0%, var(--navy) 60%); color: #fff; }
+.top .bar { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 12px 0; flex-wrap: wrap; }
+.brand { display: flex; align-items: center; gap: 10px; color: #fff; text-decoration: none; font-size: 1.3rem; letter-spacing: -0.5px; font-weight: 600; }
+.brand img { width: 34px; height: 34px; }
+.brand b { color: #4ADE80; font-weight: 800; }
+.nav { display: flex; gap: 16px; font-size: .92rem; }
+.nav a { color: #c7d2fe; text-decoration: none; }
+.nav a:hover { color: #fff; }
+.top .intro { padding: 12px 0 28px; }
+.crumbs { font-size: .82rem; color: #a5b4fc; margin-bottom: 8px; }
+.crumbs a { color: #c7d2fe; text-decoration: none; }
+.crumbs a:hover { text-decoration: underline; }
+.top h1 { font-size: clamp(1.6rem, 5.5vw, 2.3rem); line-height: 1.15; letter-spacing: -0.8px; margin: 0 0 10px; }
+.top .lead { color: #c7d2fe; margin: 0; }
+
+/* plate form (works without JavaScript: submits to /?k=...) */
+.check { display: flex; gap: 8px; margin-top: 18px; }
+.check .plate { flex: 1; display: flex; border-radius: 10px; overflow: hidden; border: 3px solid #000; background: var(--yellow); }
+.check .nl { background: var(--plate-blue); color: #fff; font-weight: 700; font-size: .75rem; display: flex; align-items: flex-end; justify-content: center; width: 34px; padding-bottom: 7px; flex: none; }
+.check input { flex: 1; min-width: 0; border: 0; background: transparent; color: #111; font: 700 1.5rem/1 "Arial Narrow", Arial, sans-serif; letter-spacing: 3px; text-transform: uppercase; padding: 12px 8px; outline: none; text-align: center; }
+.check input::placeholder { color: rgba(0,0,0,.35); }
+.check button { border: 0; border-radius: 10px; background: var(--green); color: #fff; font-weight: 700; font-size: 1rem; padding: 0 20px; cursor: pointer; }
+
+/* content */
+main { padding: 24px 0 40px; }
+.card { background: var(--card); border: 1px solid var(--line); border-radius: 16px; padding: 22px; margin-top: 18px; box-shadow: var(--shadow); }
+.card:first-child { margin-top: 0; }
+h2 { font-size: 1.3rem; letter-spacing: -0.3px; margin: 0 0 12px; line-height: 1.3; }
+h3 { font-size: 1.05rem; margin: 22px 0 6px; }
+p { margin: 0 0 12px; }
+.muted, .note { color: var(--muted); }
+.note { font-size: .85rem; }
+.stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+.stat { background: var(--field); border: 1px solid var(--line); border-radius: 12px; padding: 12px; }
+.stat .l { color: var(--muted); font-size: .75rem; text-transform: uppercase; letter-spacing: .4px; }
+.stat .v { font-weight: 800; font-size: 1.15rem; font-variant-numeric: tabular-nums; }
+@media (max-width: 560px) { .stats { grid-template-columns: 1fr 1fr; } }
+
+.table-wrap { overflow-x: auto; margin: 0 -4px; }
+table { width: 100%; border-collapse: collapse; font-size: .92rem; font-variant-numeric: tabular-nums; }
+th, td { padding: 8px 6px; border-bottom: 1px solid var(--line); text-align: right; white-space: nowrap; }
+th:first-child, td:first-child { text-align: left; }
+th { color: var(--muted); font-weight: 600; font-size: .8rem; }
+tbody tr:last-child td { border-bottom: 0; }
+
+.chart { width: 100%; height: auto; display: block; margin: 8px 0 4px; }
+.chart text { fill: var(--muted); font-size: 11px; font-family: inherit; }
+.chart .val { fill: var(--text); font-weight: 600; font-size: 10px; }
+
+.costs { display: grid; grid-template-columns: 1fr auto; }
+.costs > * { padding: 8px 0; border-bottom: 1px solid var(--line); }
+.costs .t { font-weight: 800; border-bottom: 0; }
+.costs span:nth-child(even) { text-align: right; font-weight: 600; font-variant-numeric: tabular-nums; }
+
+.pills { display: flex; flex-wrap: wrap; gap: 8px; }
+.pill { display: inline-block; border: 1px solid var(--line); background: var(--field); border-radius: 999px; padding: 5px 12px; font-size: .88rem; color: var(--text); text-decoration: none; }
+a.pill:hover { border-color: var(--accent); color: var(--accent); }
+
+.cta { background: var(--navy); color: #fff; border: 0; }
+.cta h2 { color: #fff; }
+.cta p { color: #c7d2fe; }
+
+/* articles */
+article.card h2 { margin-top: 28px; }
+article.card h2:first-child { margin-top: 0; }
+article ol, article ul { padding-left: 22px; margin: 0 0 12px; }
+article li { margin-bottom: 8px; }
+.tip { background: var(--field); border-left: 4px solid var(--green); border-radius: 8px; padding: 12px 14px; margin: 14px 0; }
+
+details.faq { border-top: 1px solid var(--line); padding: 4px 0; }
+details.faq:first-of-type { border-top: 0; }
+details.faq summary { cursor: pointer; font-weight: 700; padding: 10px 0; }
+details.faq p { margin: 0 0 12px; }
+
+.grid-links { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 8px 16px; }
+.brand-block { margin-bottom: 18px; }
+.brand-block h3 { margin: 0 0 6px; }
+
+footer { color: var(--muted); font-size: .82rem; text-align: center; padding: 8px 0 36px; }
+footer a { color: inherit; }
+footer nav { display: flex; gap: 16px; justify-content: center; flex-wrap: wrap; margin-bottom: 8px; }

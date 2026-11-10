@@ -29,15 +29,22 @@ const fmtDate = (d) => d ? d.toLocaleDateString("nl-NL", { day: "numeric", month
 const cap = (s) => s ? s.charAt(0) + s.slice(1).toLowerCase() : "";
 const known = (v) => v && !/niet geregistreerd|n\.v\.t\.|geen verstrekking/i.test(v);
 const round250 = (n) => Math.max(250, Math.round(n / 250) * 250);
+// Brand names that don't follow simple capitalisation. Keep in sync with tools/build_pages.py.
+const BRAND_NAMES = { "BMW": "BMW", "MERCEDES-BENZ": "Mercedes-Benz", "LYNK&CO": "Lynk & Co", "ALFA ROMEO": "Alfa Romeo",
+  "LAND ROVER": "Land Rover", "DS": "DS", "MG": "MG", "BYD": "BYD", "CITROEN": "Citroën", "MINI": "Mini", "KIA": "Kia" };
+const brandName = (b) => BRAND_NAMES[b] || (b || "").split(" ").map(cap).join(" ");
+// "COROLLA" → "Corolla", "T-ROC" → "T-Roc"; keep codes like "XC60", "ID.3", "C-HR" in capitals.
+const modelName = (m) => /^I\d+$/.test(m) ? m.toLowerCase()   // Hyundai i10, i20, i30
+  : m === m.toUpperCase()
+  ? m.split(" ").map(w => w.split("-").map(p => /\d/.test(p) || p.length <= 2 ? p : cap(p)).join("-")).join(" ")
+  : m;
 // "AUDI" + "AUDI A1" → "Audi A1"
 const carName = (car) => {
   const brand = car.merk || "";
   let model = (car.handelsbenaming || "").trim();
   if (brand && model.toUpperCase().startsWith(brand + " ")) model = model.slice(brand.length + 1);
-  // "COROLLA" → "Corolla", but keep codes like "XC60", "ID.3", "A1" in capitals.
-  if (model === model.toUpperCase())
-    model = model.split(" ").map(w => /\d/.test(w) || w.length <= 2 ? w : cap(w)).join(" ");
-  return `${cap(brand)} ${model}`.trim();
+  if (brand === "LYNK&CO") model = model.replace(/^LYNK & CO /i, "");
+  return `${brandName(brand)} ${modelName(model)}`.trim();
 };
 
 // ---------- RDW lookup ----------
