@@ -17,7 +17,7 @@ Static site, no server, no build step for the app. Vehicle data comes live from
 | `model.js` | All calculations: RDW lookup, value estimate, deal verdict, road tax, fuel cost. **Tunable numbers live in `PARAMS` at the top.** |
 | `i18n.js` | All user-facing text in Dutch and English (`t("key")`). Load before `model.js`. |
 | `calibrate.html` | Hidden tool (noindex): paste real ads (`PLATE KM PRICE`) → compares with our estimate and suggests better `PARAMS`. |
-| `auto/`, `en/cars/` | **Generated** model pages (60 most popular models), Dutch and English. Do not edit by hand. |
+| `auto/`, `en/cars/` | **Generated** model pages (~150 most popular models incl. BMW / Mercedes grouped per series), Dutch and English. Do not edit by hand. |
 | `gids/`, `en/guide/` | Hand-written buyer guides, Dutch and English. Each pair links to the other with `hreflang`. |
 | `tools/defects_en.json`, `tools/defects_nl.json` | English texts for the 120 most common APK defect codes, and full Dutch texts where the RDW cuts them off. Used by the app and the model pages. |
 | `assets/` | Logo, icons, social preview image, `site.css` (shared style for `auto/` and `gids/`). |
@@ -40,7 +40,7 @@ Static site, no server, no build step for the app. Vehicle data comes live from
 **Tune the price model** → collect ads, paste them into `/calibrate.html`, copy the suggested `PARAMS` into `model.js`,
 then regenerate the model pages (below).
 
-**Regenerate model pages + sitemap** (takes ~4 min; includes the APK-defects sample per model):
+**Regenerate model pages + sitemap** (takes ~8 min locally, longer on GitHub; includes the APK-defects sample per model):
 ```
 python tools/build_pages.py
 ```

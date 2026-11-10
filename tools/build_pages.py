@@ -29,8 +29,11 @@ API = "https://opendata.rdw.nl/resource/"
 TODAY = dt.date.today()
 NOW_YEAR = TODAY.year
 FROM_YEAR = 2012
-N_MODELS = 60
-SKIP_BRANDS = {"MERCEDES-BENZ", "BMW"}  # RDW lists these by engine variant ("A 180"), not by model
+N_MODELS = 150
+MAX_VARIANTS = 120   # RDW name variants per model used in queries (biggest first; keeps URLs short)
+# Vans and camper bases registered as passenger cars: their value doesn't follow our car model.
+SKIP_MODELS = {("MERCEDES-BENZ", "SPRINTER"), ("MERCEDES-BENZ", "VITO"), ("FIAT", "DUCATO"), ("VOLKSWAGEN", "CRAFTER"),
+               ("FORD", "TRANSIT"), ("CITROEN", "JUMPER"), ("PEUGEOT", "BOXER"), ("RENAULT", "MASTER"), ("IVECO", "DAILY")}
 
 # Merge RDW name variants into one model: (brand, regex on cleaned name) -> canonical name
 ALIASES = [
@@ -49,10 +52,59 @@ BRAND_NAMES = {"BMW": "BMW", "MERCEDES-BENZ": "Mercedes-Benz", "LYNK&CO": "Lynk 
                "LAND ROVER": "Land Rover", "DS": "DS", "MG": "MG", "BYD": "BYD", "CITROEN": "Citroën", "MINI": "Mini", "KIA": "Kia"}
 
 
+NAME_FIX = {"ASX": "ASX", "KA": "Ka", "ECOSPORT": "EcoSport", "IX20": "ix20", "ZOE": "Zoe", "SX4": "SX4", "S-CROSS": "S-Cross",
+            "PROCEED": "ProCeed", "XCEED": "XCeed", "ID. BUZZ": "ID. Buzz", "GRANDLAND": "Grandland", "MX-5": "MX-5"}
+MB_CODES = ("CLA", "CLS", "GLA", "GLB", "GLC", "GLE", "GLS", "EQA", "EQB", "EQC", "EQE", "EQS", "EQV", "SLK", "SLC", "SL")
+
+
+def group_name(brand, name):
+    """BMW and Mercedes-Benz are registered per engine variant ("118I", "A 180 D", "GLC 300 E 4MATIC").
+    Group them into the model people search for: "1 SERIE", "X1", "IX3", "A-KLASSE", "GLC". Returns None to skip."""
+    if brand == "BMW":
+        m = re.match(r"^(\d)ER REIHE$", name) or re.match(r"^(\d)\d\d[A-Z]*\b", name) or re.match(r"^M(\d)\b", name)
+        if m: return f"{m.group(1)} SERIE"
+        m = re.match(r"^(IX\d?|I\d|X\d|Z\d)\b", name)
+        if m: return m.group(1)
+        return None
+    if brand == "MERCEDES-BENZ":
+        m = re.match(r"^(CLA|CLS|GLA|GLB|GLC|GLE|GLS|EQA|EQB|EQC|EQE|EQS|EQV|SLK|SLC|SL)\b", name)
+        if m: return m.group(1)
+        m = re.match(r"^([ABCEGSV])(-KLASSE| \d|\d)", name)
+        if m: return f"{m.group(1)}-KLASSE"
+        if name.startswith(("VITO", "EVITO", "SPRINTER")): return "VITO" if "VITO" in name else "SPRINTER"
+        return None
+    for b, pat, repl in MERGE:
+        if b == brand: name = re.sub(pat, repl, name)
+    return name
+
+
+# More name variants that are the same model (brand, regex, replacement).
+MERGE = [
+    ("HYUNDAI", r"^I (\d+)$", r"I\1"),                 # "I 30" -> "I30"
+    ("MAZDA", r"^MAZDA ?(\d)$", r"\1"),                 # "MAZDA2" -> "2"
+    ("RENAULT", r"^(CLIO|CAPTUR|MEGANE|ARKANA|AUSTRAL) E-TECH.*$", r"\1"),
+    ("OPEL", r"^(MOKKA|CROSSLAND|GRANDLAND) X$", r"\1"),
+    ("SEAT", r"^LEON (ST|SPORTSTOURER)$", "LEON"),
+    ("SKODA", r"^ENYAQ\b.*$", "ENYAQ"),
+    ("KIA", r"^CEE ?'?D$", "CEED"),
+    ("KIA", r"^PRO CEE ?'?D$", "PROCEED"),
+]
+
+
 # ---------------------------------------------------------------- helpers
 def cap(s): return s[:1].upper() + s[1:].lower() if s else ""
 def brand_name(b): return BRAND_NAMES.get(b) or " ".join(cap(w) for w in b.split(" "))
 def model_name(m):
+    if re.match(r"^\d SERIE$", m):            # BMW "3 SERIE" → "3 Serie" / "3 Series"
+        return m[0] + (" Series" if LANG == "en" else " Serie")
+    if re.match(r"^[A-Z]-KLASSE$", m):          # Mercedes "A-KLASSE" → "A-Klasse" / "A-Class"
+        return m[0] + ("-Class" if LANG == "en" else "-Klasse")
+    if m in NAME_FIX:
+        return NAME_FIX[m]
+    if m in MB_CODES:                           # Mercedes GLC, CLA, EQA ... stay in capitals
+        return m
+    if re.match(r"^I(X\d?|\d)$", m):            # BMW iX1, i4
+        return "i" + m[1:]
     if m != m.upper():
         return m
     if re.match(r"^I\d+$", m):   # Hyundai i10, i20, i30
@@ -122,12 +174,12 @@ def top_models():
     rows = rdw("m9d7-ebf2", {
         "$select": "merk,handelsbenaming,count(*) as n",
         "$where": f"voertuigsoort='Personenauto' AND datum_eerste_toelating_dt > '{FROM_YEAR - 1}-12-31T00:00:00'",
-        "$group": "merk,handelsbenaming", "$order": "n DESC", "$limit": "1500"})
-    agg, variants = Counter(), defaultdict(set)
+        "$group": "merk,handelsbenaming", "$order": "n DESC", "$limit": "6000"})
+    agg, variants = Counter(), defaultdict(Counter)
     for r in rows:
         brand = r["merk"]
         raw = (r.get("handelsbenaming") or "").strip()
-        if not raw or brand in SKIP_BRANDS: continue
+        if not raw: continue
         name = raw.upper()
         if name.startswith(brand + " "): name = name[len(brand) + 1:]
         for b, pat, canon in ALIASES:
@@ -135,9 +187,11 @@ def top_models():
             if b == brand and m:
                 name = canon or m.group(1)
                 break
+        name = group_name(brand, name)
+        if not name or (brand, name) in SKIP_MODELS: continue
         agg[(brand, name)] += int(r["n"])
-        variants[(brand, name)].add(raw)
-    return [(b, n, sorted(variants[(b, n)]), c) for (b, n), c in agg.most_common(N_MODELS)]
+        variants[(brand, name)][raw] += int(r["n"])
+    return [(b, n, sorted(v for v, _ in variants[(b, n)].most_common(MAX_VARIANTS)), c) for (b, n), c in agg.most_common(N_MODELS)]
 
 
 def model_data(brand, name, variants):
@@ -678,8 +732,10 @@ def fetch_all():
             print(f"  APK data failed for {m['brand']} {m['name']}: {e}")
             apk = None
         m.update(years=years, colours=colours, mix=mix, use=use, apk=apk)
+        print(f"  fetched {m['brand']} {m['name']} ({time.time() - t_start:.0f}s)", flush=True)
         return m
 
+    t_start = time.time()
     defect_texts()
     with cf.ThreadPoolExecutor(max_workers=6) as ex:
         list(ex.map(fetch, models))
