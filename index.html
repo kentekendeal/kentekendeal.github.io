@@ -185,6 +185,12 @@
   .cost-opts input:focus, .cost-opts select:focus { outline: 2px solid var(--accent); outline-offset: -1px; }
   @media (max-width: 520px) { .cost-opts { grid-template-columns: 1fr 1fr; } }
 
+  /* compare with listings */
+  .compare { margin-top: 16px; padding-top: 14px; border-top: 1px solid var(--line); }
+  .compare p { margin: 0 0 8px; font-size: .88rem; color: var(--muted); }
+  .compare .row { display: flex; flex-wrap: wrap; gap: 8px; }
+  .compare a { text-decoration: none; }
+
   /* APK history */
   .apk-stats { grid-template-columns: repeat(3, 1fr); margin-top: 0; }
   .apk-list { list-style: none; margin: 16px 0 0; padding: 0; }
@@ -543,6 +549,7 @@ function renderCar() {
         <label>${esc(t("kmLabel"))}<input id="km" inputmode="numeric" placeholder="${esc(t("egKm"))}"></label>
       </div>
       <div id="valueOut"></div>
+      ${compareHtml(car, fx)}
     </div>
 
     <div class="card">
@@ -584,6 +591,37 @@ function renderCar() {
   $("share").addEventListener("click", share);
   renderAll();
   loadApk(car, fx);
+}
+
+// ---------- compare with similar cars for sale (opens the search on the other site) ----------
+function compareLinks(car, fx) {
+  const slug = (s) => s.toLowerCase().replace(/[!']/g, "").replace(/&/g, "-").replace(/[^a-z0-9.]+/g, "-").replace(/^-+|-+$/g, "");
+  const brand = car.merk || "";
+  let model = (car.handelsbenaming || "").trim().toUpperCase();
+  if (model.startsWith(brand + " ")) model = model.slice(brand.length + 1);
+  if (brand === "LYNK&CO") model = model.replace(/^LYNK & CO /, "");
+  const w = model.split(/\s+/).filter(Boolean);
+  // "MODEL 3", "SERIE 3" and "ID. 3" need two words; otherwise the first word is the model ("GOLF VARIANT" → golf).
+  const m = slug(w.length > 1 && (/^(MODEL|SERIE|CLASS|ID\.?)$/.test(w[0]) || /^\d$/.test(w[1])) ? w.slice(0, 2).join(" ") : (w[0] || ""));
+  const b = slug(brand);
+  if (!b || !m) return [];
+  const y = fx.first ? fx.first.getFullYear() : null;
+  const yr = (a, z) => y ? `?${a}=${y - 1}&${z}=${y + 1}` : "";
+  return [
+    // Each site spells some names differently: Gaspedaal "id3", AutoScout24 "lynk-and-co".
+    ["Gaspedaal", `https://www.gaspedaal.nl/${b}/${m.includes(".") ? m.replace(/[.-]/g, "") : m}${yr("bmin", "bmax")}`],
+    ["Marktplaats", `https://www.marktplaats.nl/l/auto-s/${b}/q/${m}/`],
+    ["AutoScout24", `https://www.autoscout24.nl/lst/${slug(brand.replace(/&/g, " and "))}/${m}${yr("fregfrom", "fregto")}`],
+  ];
+}
+
+function compareHtml(car, fx) {
+  const links = compareLinks(car, fx);
+  if (!links.length || car.voertuigsoort !== "Personenauto") return "";
+  const y = fx.first ? fx.first.getFullYear() : null;
+  return `<div class="compare"><p>${esc(t(y ? "compareText" : "compareTextNoYear", { car: carName(car), from: y - 1, to: y + 1 }))}</p>
+    <div class="row">${links.map(([name, url]) => `<a class="link-btn" href="${esc(url)}" target="_blank" rel="noopener nofollow"
+      onclick="track('vergelijk-${name.toLowerCase()}')">${esc(name)} ↗</a>`).join("")}</div></div>`;
 }
 
 // ---------- APK history (loaded after the main card, so it never slows the first result) ----------

@@ -48,6 +48,7 @@ const I18N = {
     costsNoteIns: "Exclusief onderhoud. Brandstof: benzine € {b}, diesel € {d}, stroom € {e}/kWh.",
     costsNote: "Exclusief verzekering en onderhoud. Brandstof: benzine € {b}, diesel € {d}, stroom € {e}/kWh.",
     noCosts: "Voor dit voertuig kunnen we geen kosten berekenen.",
+    compareText: "Vergelijk met wat nu te koop staat ({car}, bouwjaar {from}–{to}):", compareTextNoYear: "Vergelijk met wat nu te koop staat ({car}):",
     // APK history
     apkTitle: "APK-geschiedenis", apkChecks: "Keuringen", apkDefectsL: "Gebreken", apkAdviceL: "Adviespunten",
     apkClean: "Geen gebreken", apkDefect1: "1 gebrek", apkDefectN: "{n} gebreken", apkAdviceOnly: "Alleen advies", apkAdviceTag: "advies",
@@ -123,6 +124,7 @@ const I18N = {
     costsNoteIns: "Excluding maintenance. Fuel: petrol € {b}, diesel € {d}, electricity € {e}/kWh.",
     costsNote: "Excluding insurance and maintenance. Fuel: petrol € {b}, diesel € {d}, electricity € {e}/kWh.",
     noCosts: "We can't calculate costs for this vehicle.",
+    compareText: "Compare with what's for sale right now ({car}, {from}–{to}):", compareTextNoYear: "Compare with what's for sale right now ({car}):",
     // APK history
     apkTitle: "MOT (APK) history", apkChecks: "Inspections", apkDefectsL: "Defects", apkAdviceL: "Advisories",
     apkClean: "No defects", apkDefect1: "1 defect", apkDefectN: "{n} defects", apkAdviceOnly: "Advisories only", apkAdviceTag: "advisory",

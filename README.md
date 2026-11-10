@@ -43,7 +43,8 @@ Or on GitHub: Actions → "Update model pages" → Run workflow. It also runs au
 ## Analytics
 
 [GoatCounter](https://www.goatcounter.com) (no cookies). Only page paths and event names are sent, never plates.
-Events: `kenteken-gezocht`, `kenteken-niet-gevonden`, `deal-check`, `voorbeeld-geklikt`, `gedeeld`, `taal-en`, `taal-nl`.
+Events: `kenteken-gezocht`, `kenteken-niet-gevonden`, `deal-check`, `voorbeeld-geklikt`, `gedeeld`, `taal-en`, `taal-nl`,
+`vergelijk-gaspedaal`, `vergelijk-marktplaats`, `vergelijk-autoscout24` (clicks on the compare buttons).
 
 ## Data notes
 
