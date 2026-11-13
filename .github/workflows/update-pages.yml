@@ -28,6 +28,8 @@ jobs:
           python-version: "3.12"
 
       - name: Generate pages from RDW data
+        env:
+          RDW_APP_TOKEN: ${{ secrets.RDW_APP_TOKEN }}   # optional, makes the RDW much faster
         run: python -I tools/build_pages.py
 
       - name: Commit and push if anything changed

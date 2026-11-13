@@ -117,11 +117,16 @@ def nl_int(n): return f"{round(n):,}".replace(",", ".")
 def round250(n): return max(250, round(n / 250) * 250)
 
 
+# Optional free RDW / Socrata app token (GitHub secret RDW_APP_TOKEN). Without it the RDW throttles shared servers.
+RDW_TOKEN = __import__("os").environ.get("RDW_APP_TOKEN", "").strip()
+
+
 def rdw(dataset, params, tries=4):
     url = API + dataset + ".json?" + urllib.parse.urlencode(params)
+    headers = {"X-App-Token": RDW_TOKEN} if RDW_TOKEN else {}
     for i in range(tries):
         try:
-            with urllib.request.urlopen(url, timeout=180) as r:
+            with urllib.request.urlopen(urllib.request.Request(url, headers=headers), timeout=180) as r:
                 return json.load(r)
         except Exception:
             if i == tries - 1:
