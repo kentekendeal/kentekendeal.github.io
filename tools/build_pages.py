@@ -145,7 +145,7 @@ LOSES = re.findall(r'"([^"]+)"', re.search(r"const LOSES_VALUE = \[(.*?)\]", JS,
 FUEL_PRICE = {k: float(v) for k, v in re.findall(r"(\w+): ([\d.]+)", re.search(r"const FUEL_PRICE = \{(.*?)\}", JS).group(1))}
 
 
-def value_factor(age, brand, fuel):
+def value_factor(age, brand, fuel, price=0):
     """Share of the new price a car keeps at `age` years with typical mileage (mirrors estimateValue)."""
     P = PARAMS
     if age < 1:
@@ -157,6 +157,7 @@ def value_factor(age, brand, fuel):
     ramp = lambda a, b: min(1, max(0, (age - a) / (b - a)))
     if fuel == "Diesel" and age > 5: f *= 1 - P["dieselMax"] * ramp(5, 10)
     if fuel == "Elektrisch" and age > 1: f *= 1 - P["evMax"] * ramp(1, 4)
+    if price > 25000 and age > 6: f *= (price / 25000) ** (-P.get("luxuryOld", 0) * ramp(6, 12))
     return f
 
 
@@ -496,8 +497,8 @@ def build_model_page(m, others, write=True):
         age = (TODAY - dt.date(y, 7, 1)).days / 365.25
         if p and n >= 30 and 1 <= age <= 25 and y < NOW_YEAR:
             row["age"] = age
-            row["mid"] = max(p * value_factor(max(age, 0.1), brand, main_fuel), 500)
-            row["next"] = max(p * value_factor(age + 1, brand, main_fuel), 500)
+            row["mid"] = max(p * value_factor(max(age, 0.1), brand, main_fuel, p), 500)
+            row["next"] = max(p * value_factor(age + 1, brand, main_fuel, p), 500)
         rows.append(row)
     valued = [r for r in rows if r["mid"]]
     if len(valued) < 3:

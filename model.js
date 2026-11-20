@@ -8,7 +8,8 @@ const API = "https://opendata.rdw.nl/resource/";
 const PARAMS = {
   year1Drop: 0.20,   // value lost in the first year
   yearlyDrop: 0.12,  // value lost per year in years 2–6 (on remaining value)
-  oldDrop: 0.05,     // value lost per year after year 6 (older cars lose value more slowly)
+  oldDrop: 0.06,     // value lost per year after year 6 (older cars lose value more slowly)
+  luxuryOld: 0.6,    // old expensive cars (new price > €25k) lose extra: × (price/25k)^-luxuryOld, ramps in 6 → 12 years
   brandUp: 1.08,     // brands that hold value
   brandDown: 0.90,   // brands that lose value faster
   dieselMax: 0.10,   // extra loss for old diesels (ramps in from 5 → 10 years)
@@ -145,6 +146,8 @@ function estimateValue(car, fx, km, ageAhead = 0, P = PARAMS) {
   const ramp = (from, to) => Math.min(1, Math.max(0, (age - from) / (to - from)));
   if (fx.fuelType === "diesel" && age > 5) { factor *= 1 - P.dieselMax * ramp(5, 10); if (age > 7) notes.push(t("noteOldDiesel")); }
   if (fx.isEV && age > 1) { factor *= 1 - P.evMax * ramp(1, 4); if (age > 3) notes.push(t("noteOldEV")); }
+  // Old luxury cars (BMW 5, Audi A6, Volvo V70…) sell for far less than their new price suggests (calibrated Nov 2026).
+  if (price > 25000 && age > 6) factor *= Math.pow(price / 25000, -(P.luxuryOld ?? 0) * ramp(6, 12));
   if (/onlogisch/i.test(car.tellerstandoordeel || "")) { factor *= 0.80; notes.push(t("noteKmBad")); }
 
   if (km != null) {
